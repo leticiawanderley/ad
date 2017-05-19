@@ -69,13 +69,13 @@ hoc = series[series$series_name=="House of Cards",]
 himym = series[series$series_name=="How I Met Your Mother",]
 mf = series[series$series_name=="Modern Family",]
 ggplot(sherlock, aes(series_name, UserRating, series_ep)) + theme_bw() +
-  geom_line(data=sherlock, aes(x=series_ep, y=UserRating), color="blue") +
+  geom_line(data=sherlock, aes(x=series_ep, y=UserRating), color="blue") +Variância
   geom_line(data=mf, aes(x=series_ep, y=UserRating), color="darkorange") +
-  geom_line(data=hoc, aes(x=series_ep, y=UserRating), color="blacktheme_bw() +") +
+  geom_line(data=hoc, aes(x=series_ep, y=UserRating), color="black") +
   geom_line(data=himym, aes(x=series_ep, y=UserRating), color="red")
 ```
 ```{r}
-group_by(series, series_name) %>% 
-  summarize(Desvio = sd(UserRating)) %>%
-  arrange(desc(Desvio))
+group_by(series, Série=series_name) %>% 
+  summarize(Variância = var(UserRating)) %>%
+  arrange(Variância)
 ```
