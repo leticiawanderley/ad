@@ -15,13 +15,14 @@ library("readr")
 
 ## Problema 1 - Checkpoint 1
 
-As séries escolhida foram: Modern Family, Sherlock, House of Cards e How I Met Your Mother.
-Carregando o subconjunto de séries:
 ```{r series, include=FALSE}
 dados = read_csv("series_from_imdb.csv")
 series = dados %>% 
   filter(series_name %in% c("Modern Family", "Sherlock", "House of Cards", "How I Met Your Mother"))
 ```
+> As séries escolhidas foram: Modern Family, Sherlock, House of Cards e How I Met Your Mother.
+__Modern Family__ e __How I Met Your Mother__ são séries americanas no estilo sitcom, produzidas respectivamente pelos canais ABC e CBS. Ambas tem uma quantidade relativamente grande de temporadas, 7 ou mais, com aproximadamente 20 episódios de 20 minutos de duração por temporada. 
+Já __Sherlock__ e __House of Cards__ são séries de drama com quatro temporadas cada. Sherlock é produzida pelo canal britânico BBC tem 4 episódios de aproximadamente 1 hora por temporada e House of Cards é produzida, nos EUA, pelo serviço de streaming Netflix e conta com 13 episódios de aproximadamente 1 hora por temporada. 
 
 ### Respondendo às perguntas
 
@@ -43,7 +44,7 @@ group_by(series, Série=series_name) %>%
   arrange(desc(Mediana))
 ```
 
-Usando quatro diferentes métricas para sumarizar as notas dadas pelos usuários o resultado é sempre o mesmo. Sherlock é a melhor série, seguida por House of Cards, How I Met Your Mother e Modern Family, nesss ordem.
+> Usando quatro diferentes métricas para sumarizar as notas dadas pelos usuários o resultado é sempre o mesmo. Sherlock é a melhor série, seguida por House of Cards, How I Met Your Mother e Modern Family, nessa ordem.
 
 #### b. Qual das séries que você escolheu tem episódios de qualidade mais irregular segundo o IMDB? A diferença é grande? Pequena?
 
