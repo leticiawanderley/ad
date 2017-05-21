@@ -148,7 +148,8 @@ $(document).ready(function () {
 <p>Analisando o <strong>IQR</strong> é possível observar que as notas da série Modern Family se concentram em volta de sua mediana, 8. As notas da série House of Cards se concentram em volta de um intervalo de valores relativamente pequeno, entre 8.4 e 8.9. No caso de Sherlock e How I Met Your Mother as notas estão menos concentradas, o intervalo de valores onde se encontram 50% da notas é maior, entre 8.4 e 9.3 no caso de Sherlock e entre 7.9 e 8.6 no caso de How I Met Your Mother.</p>
 </blockquote>
 <p><strong>IQR</strong> (Interquartile Range), diferença entre o terceiro e primeiro quartil das observações. é uma medida de dispersão que representam onde estão concentrados os 50% centrais dos dados.</p>
-<pre class="r"><code>group_by(series, Série=series_name) %&gt;% 
+<pre class="r"><code>series %&gt;%
+  group_by(Série=series_name) %&gt;% 
   summarize(Mediana=median(UserRating),Máximo=max(UserRating),Mínimo=min(UserRating),
             IQR=IQR(UserRating),Média=mean(UserRating)) %&gt;%
   arrange(desc(Mediana))</code></pre>
@@ -160,7 +161,7 @@ $(document).ready(function () {
 ## 3 How I Met Your Mother     8.3    9.5    5.7  0.70 8.229327
 ## 4         Modern Family     8.0    9.5    5.9  0.40 7.989305</code></pre>
 <blockquote>
-<p>De acordo com a maior parte das métricas analisadas <strong>Sherlock</strong> é a série mais bem avaliada do subconjunto escolhido. O que se observa nesse subconjunto específico é que as séries de drama são melhor avaliadas quando comparadas com as de comédia. Outro fator que pode contribuir para esse resultado é o fato que as séries melhor avaliadas têm uma menor quantidade de episódios por temporada, é possível que, com menos episódios com os quais se preocupar, os produtores foquem mais na qualidade.</p>
+<p>De acordo com a maior parte das métricas analisadas <strong>Sherlock</strong> é a série mais bem avaliada do subconjunto escolhido. A diferença entre as métricas, no entanto, não varia drasticamente entre as séries. Variando dentro de um intervalo de 1 ponto no caso da mediana, nota máxima e média e por volta de 2 pontos no caso da nota mínima. O que se observa nesse subconjunto específico é que as séries de drama são melhor avaliadas quando comparadas com as de comédia. Outro fator que pode contribuir para esse resultado é o fato que as séries melhor avaliadas têm uma menor quantidade de episódios por temporada, é possível que, com menos episódios com os quais se preocupar, os produtores foquem mais na qualidade.</p>
 </blockquote>
 </div>
 <div id="b.-qual-das-series-que-voce-escolheu-tem-episodios-de-qualidade-mais-irregular-segundo-o-imdb-a-diferenca-e-grande-pequena" class="section level4">

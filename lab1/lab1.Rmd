@@ -53,7 +53,7 @@ series %>%
   arrange(desc(Mediana))
 ```
 
-> De acordo com a maior parte das métricas analisadas __Sherlock__ é a série mais bem avaliada do subconjunto escolhido. O que se observa nesse subconjunto específico é que as séries de drama são melhor avaliadas quando comparadas com as de comédia. Outro fator que pode contribuir para esse resultado é o fato que as séries melhor avaliadas têm uma menor quantidade de episódios por temporada, é possível que, com menos episódios com os quais se preocupar, os produtores foquem mais na qualidade. 
+> De acordo com a maior parte das métricas analisadas __Sherlock__ é a série mais bem avaliada do subconjunto escolhido. A diferença entre as métricas, no entanto, não varia drasticamente entre as séries. Variando dentro de um intervalo de 1 ponto no caso da mediana, nota máxima e média e por volta de 2 pontos no caso da nota mínima. O que se observa nesse subconjunto específico é que as séries de drama são melhor avaliadas quando comparadas com as de comédia. Outro fator que pode contribuir para esse resultado é o fato que as séries melhor avaliadas têm uma menor quantidade de episódios por temporada, é possível que, com menos episódios com os quais se preocupar, os produtores foquem mais na qualidade. 
 
 #### b. Qual das séries que você escolheu tem episódios de qualidade mais irregular segundo o IMDB? A diferença é grande? Pequena?
 
