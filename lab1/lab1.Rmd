@@ -20,9 +20,8 @@ dados = read_csv("series_from_imdb.csv")
 series = dados %>% 
   filter(series_name %in% c("Modern Family", "Sherlock", "House of Cards", "How I Met Your Mother"))
 ```
-As séries escolhidas foram: Modern Family, Sherlock, House of Cards e How I Met Your Mother.
-[Modern Family](http://www.imdb.com/title/tt1442437/) e [How I Met Your Mother](http://www.imdb.com/title/tt0460649/) são séries americanas no estilo sitcom, produzidas respectivamente pelos canais ABC e CBS. Ambas tem uma quantidade relativamente grande de temporadas, 7 ou mais, com aproximadamente 20 episódios de 20 minutos de duração por temporada.
-Já [Sherlock](http://www.imdb.com/title/tt1475582/) e [House of Cards](http://www.imdb.com/title/tt1856010/) são séries de drama com quatro temporadas cada. Sherlock é produzida pelo canal britânico BBC tem 4 episódios de aproximadamente 1 hora por temporada e House of Cards é produzida, nos EUA, pelo serviço de streaming Netflix e conta com 13 episódios de aproximadamente 1 hora por temporada.
+As séries escolhidas foram [Modern Family](http://www.imdb.com/title/tt1442437/), [Sherlock](http://www.imdb.com/title/tt1475582/), [House of Cards](http://www.imdb.com/title/tt1856010/) e [How I Met Your Mother](http://www.imdb.com/title/tt0460649/). Modern Family e How I Met Your Mother são séries americanas no estilo sitcom, produzidas respectivamente pelos canais ABC e CBS. Ambas tem uma quantidade relativamente grande de temporadas, 7 ou mais, com aproximadamente 20 episódios de 20 minutos de duração por temporada.
+Já Sherlock e House of Cards são séries de drama com quatro temporadas cada. Sherlock é produzida pelo canal britânico BBC tem 4 episódios de aproximadamente 1 hora por temporada e House of Cards é produzida, nos EUA, pelo serviço de streaming Netflix e conta com 13 episódios de aproximadamente 1 hora por temporada.
 
 Nesta análise serão observados dados retirados do [imdb](http://www.imdb.com/), estes dados contém várias informações sobre as séries em questão, entre elas: nome, temporada, episódio e nota dos usuários. A nota é atribuída pelos usuários do imdb e será usada na análise como métrica de qualidade do episódio da série. 
 
