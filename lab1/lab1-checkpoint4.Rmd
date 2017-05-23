@@ -1,0 +1,44 @@
+---
+title: "Problema 1 - Checkpoint 4"
+author: "Leticia Wanderley"
+date: "23 de maio de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("dplyr")
+library("tidyr")
+library("ggplot2")
+library("readr")
+```
+
+## Problema 1 - Checkpoint 4
+
+```{r series, include=FALSE}
+dados = read_csv("series_from_imdb.csv")
+```
+
+### Existe algum ponto de virada entre as temporadas de uma série depois do qual as notas começam a diminuir/aumentar?
+```{r}
+series_median <- 
+  dados %>%
+  group_by(series_name, season) %>%
+  summarise(mediana=median(UserRating))
+
+series_median %>%
+  ggplot(aes(x=reorder(season, season, FUN=median), y=mediana)) + theme_bw() +
+  geom_boxplot() 
+
+seasons_median <-
+  medianas %>%
+  group_by(season) %>%
+  summarise(mediana=median(mediana))
+
+seasons_median %>%
+  ggplot(aes(x=season, y=mediana)) + theme_bw() +
+  geom_line() 
+```
+
+### Os usuários costumam votar mais quando gostam de um episódio ou quando não gostam (os episódios com notas altas têm mais votos que os com notas baixas)?
+
