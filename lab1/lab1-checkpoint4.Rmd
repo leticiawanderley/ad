@@ -31,7 +31,7 @@ series_median %>%
   geom_boxplot() 
 
 seasons_median <-
-  medianas %>%
+  series_median %>%
   group_by(season) %>%
   summarise(mediana=median(mediana))
 
