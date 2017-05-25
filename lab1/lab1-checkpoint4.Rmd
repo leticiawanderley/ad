@@ -20,25 +20,66 @@ dados = read_csv("series_from_imdb.csv")
 ```
 
 ### Existe algum ponto de virada entre as temporadas de uma série depois do qual as notas começam a diminuir/aumentar?
-```{r}
+```{r include=FALSE}
 series_median <- 
   dados %>%
   group_by(series_name, season) %>%
   summarise(mediana=median(UserRating))
-
-series_median %>%
-  ggplot(aes(x=reorder(season, season, FUN=median), y=mediana)) + theme_bw() +
-  geom_boxplot() 
 
 seasons_median <-
   series_median %>%
   group_by(season) %>%
   summarise(mediana=median(mediana))
 
+names <- unique(series_median$series_name)
+part1 <- series_median[series_median$series_name %in% names[1:6],]
+part2 <- series_median[series_median$series_name %in% names[7:12],]
+part3 <- series_median[series_median$series_name %in% names[13:18],]
+part4 <- series_median[series_median$series_name %in% names[19:24],]
+part5 <- series_median[series_median$series_name %in% names[25:29],]
+part6 <- series_median[series_median$series_name %in% names[30:31],]
+```
+Ao analisar as series escolhidas no checkpoint 1 foi possivel perceber que as series com mais temporadas tinham avaliacoes piores que as series com menos temporadas. E que depois de uma certa temporada as notas da avaliacoes comecavam a cair perceptivelmente. Dessa observacao surgiu a ideia de checar se isso o mesmo acontecia com todas as series do universo e se existia um ponto (temporada) depois do qual as notas tendiam a ser menores.
+```{r boxplot}
+series_median %>%
+  ggplot(aes(x=reorder(season, season, FUN=median), y=mediana)) + theme_bw() +
+  geom_jitter(width = .1, alpha = .6) +
+  geom_boxplot(outlier.colour = NA, alpha = .6) +
+  labs(title="Notas por temporada (todas as séries)", x="Temporada", y="Mediana da nota")
+```
+O boxplot acima indica um leve declinio na mediana a medida que as temporadas avancam. Tambem se pode ver que sao as temporadas inciais que apresentam valores muito abaixo ou muito acima da mediana.
+```{r time}
 seasons_median %>%
   ggplot(aes(x=season, y=mediana)) + theme_bw() +
-  geom_line() 
+  geom_line() +
+  labs(title="Mediana da nota atribuída à temporada", x="Temporada", y="Nota")
 ```
-
+Eh mais facil ver o comportamento das notas se se observa um time series das nota da temporada. Aparentemente existem um pico global de notas na segunda temporada das series e um pico local na marca da quinta temporada. Depois da quinta temporada as notas começam a diminuir, atingindo o ponto mais baixo na oitava temporada.
+```{r time}
+part1 %>%
+  ggplot(aes(x=season, y=mediana)) + theme_bw() +
+  geom_line() +
+  facet_wrap(~series_name)
+part2 %>%
+  ggplot(aes(x=season, y=mediana)) + theme_bw() +
+  geom_line() +
+  facet_wrap(~series_name)
+part3 %>%
+  ggplot(aes(x=season, y=mediana)) + theme_bw() +
+  geom_line() +
+  facet_wrap(~series_name)
+part4 %>%
+  ggplot(aes(x=season, y=mediana)) + theme_bw() +
+  geom_line() +
+  facet_wrap(~series_name)
+part5 %>%
+  ggplot(aes(x=season, y=mediana)) + theme_bw() +
+  geom_line() +
+  facet_wrap(~series_name)
+part6 %>%
+  ggplot(aes(x=season, y=mediana)) + theme_bw() +
+  geom_line() +
+  facet_wrap(~series_name)
+```
 ### Os usuários costumam votar mais quando gostam de um episódio ou quando não gostam (os episódios com notas altas têm mais votos que os com notas baixas)?
 
