@@ -48,10 +48,10 @@ series <-
     group_by(series_name) %>%
     filter(series_ep %in% c(min(series_ep), max(series_ep))) %>%
     arrange(series_name) %>%
-    mutate(diff = r1 - lag(r1, default=first(r1))) %>%
+    mutate(diff = ((r1 - lag(r1, default=first(r1)))*100)) %>%
     filter(diff != 0.0)
 # diferença entre o número de notas 1 do último episódio e o número de notas 1 do primeiro
 series %>%
-  ggplot(mapping = aes(x = series_name, y=diff)) +
+  ggplot(mapping = aes(x = diff, y=series_name)) +
   geom_point()
 ```
