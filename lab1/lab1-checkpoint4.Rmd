@@ -60,6 +60,7 @@ part1 %>%
   ggplot(aes(x=season, y=mediana)) + theme_bw() +
   geom_line() +
   facet_wrap(~series_name)
+
 part2 %>%
   ggplot(aes(x=season, y=mediana)) + theme_bw() +
   geom_line() +
