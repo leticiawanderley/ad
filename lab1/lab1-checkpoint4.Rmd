@@ -15,9 +15,10 @@ library("readr")
 
 ## Problema 1 - Checkpoint 4
 
+Nesta análise serão observados dados retirados do [imdb](http://www.imdb.com/), estes dados contém várias informações sobre as séries em questão, entre elas: nome, temporada, episódio, nota dos usuários e porcentagem de valores de notas atribuídas. A nota é atribuída pelos usuários do imdb e a porcentagem de valores de notas é quantidade de votos de 1 a 10 em relação a quantidade de votos total. 
+
 ```{r series, include=FALSE}
 dados = read_csv("series_from_imdb.csv")
-names = unique(dados$series_name)
 ```
 
 ### Existe algum ponto de virada entre as temporadas de uma série depois do qual as notas começam a diminuir/aumentar?
