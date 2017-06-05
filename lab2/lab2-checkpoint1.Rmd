@@ -26,8 +26,8 @@ graph <-
     theme_bw() +
     geom_smooth(aes(colour=series_name, fill=series_name),
                 size=.5, method = 'loess', alpha=.2) +
-    geom_point(aes(text=paste('Nome: ', Episode, '<br>Nota: ', UserRating, 
-                              '<br>Temporada: ', season, '<br>Episódio: ', series_ep)), size=.9) +
+    geom_point(aes(text=paste('Nome:', Episode, '<br>Nota:', UserRating, 
+                              '<br>Temporada:', season, '<br>Episódio:', series_ep)), size=.9) +
     scale_alpha_continuous(range = c(0.3, 1)) +
     facet_wrap(~series_name, scales="free_x") +
     theme(legend.title=element_blank()) +
