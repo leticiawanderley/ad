@@ -1,0 +1,37 @@
+---
+title: "Lab2 Checkpoint1"
+author: "Leticia Wanderley"
+date: "6/5/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
+library("plotly")
+dados = read_csv("series_from_imdb.csv")
+series = dados %>% 
+  filter(series_name %in% c("Modern Family", "Sherlock", "House of Cards", "How I Met Your Mother"))
+```
+
+## Revisitando uma visualização
+
+Os gráficos abaixo representam a evolução das notas dadas por usuários do site [IMDb](http://www.imdb.com/) aos episódios das séries House of Cards, How I Met your Mother, Modern Family e Sherlock. Cada ponto representa um episódio da série e o tom dos pontos escurece de acordo com a temporada que pertencem. As séries How I Met Your Mother e Modern Family tem mais temporadas e episódios, também tem notas mais baixas, em geral, e um tendência de queda nas notas dos episódios. Já Sherlock e House of Cards têm menos temporadas e notas mais altas com uma leve tendência positiva.
+
+
+```{r series, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.align="center"}
+graph <- 
+  series %>%
+    ggplot(aes(x=series_ep, y=UserRating, colour=series_name, alpha=season)) + 
+    theme_bw() +
+    geom_smooth(aes(colour=series_name, fill=series_name),
+                size=.5, method = 'loess', alpha=.2) +
+    geom_point(aes(text=paste('Nome: ', Episode, '<br>Nota: ', UserRating, 
+                              '<br>Temporada: ', season, '<br>Episódio: ', series_ep)), size=.9) +
+    scale_alpha_continuous(range = c(0.3, 1)) +
+    facet_wrap(~series_name, scales="free_x") +
+    theme(legend.title=element_blank()) +
+    theme(legend.position="none") +
+    labs(title="Variação das notas dos usuários", x="Episódio", y="") 
+ggplotly(graph, tooltip = c("text"), width = 850, height = 450)
+```
