@@ -7,10 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library("dplyr")
-library("tidyr")
-library("ggplot2")
-library("readr")
+library("tidyverse")
 library("plotly")
 dados = read_csv("series_from_imdb.csv")
 series = dados %>% 
@@ -36,4 +33,4 @@ graph <-
 ggplotly(graph, tooltip = c("text"), width = 850, height = 450)
 ```
 
-Os gráficos acima representam a evolução das notas dadas por usuários do site [IMDb](http://www.imdb.com/) aos episódios das séries House of Cards, How I Met your Mother, Modern Family e Sherlock. Cada ponto representa um episódio da série e o tom dos pontos escurece de acordo com a temporada que pertencem. As séries How I Met Your Mother e Modern Family têm mais temporadas e episódios, também têm notas mais baixas, em geral, e uma tendência de queda nas notas dos episódios. isso quer dizer que para estas duas séries a medida que se avança nas temporadas e nos episódios da série as notas diminuem. Já Sherlock e House of Cards têm menos temporadas e notas mais altas com uma leve tendência positiva nas notas, o que significa que a medida que se avança nas temporadas e episódios as notas atribuídas pelos usuários aumentam de valor.
+Os gráficos acima representam a evolução das notas dadas por usuários do site [IMDb](http://www.imdb.com/) aos episódios das séries House of Cards, How I Met your Mother, Modern Family e Sherlock. Cada ponto representa um episódio da série e o tom dos pontos escurece de acordo com a temporada que pertencem. As séries How I Met Your Mother e Modern Family têm mais temporadas e episódios, também têm notas mais baixas, em geral, e uma tendência de queda nas notas dos episódios. Isso quer dizer que para estas duas séries a medida que se avança nas temporadas e nos episódios da série as notas diminuem. Já Sherlock e House of Cards têm menos temporadas e notas mais altas com uma leve tendência positiva nas notas, o que significa que a medida que se avança nas temporadas e episódios as notas atribuídas pelos usuários aumentam de valor.
