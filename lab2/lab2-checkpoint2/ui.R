@@ -58,6 +58,5 @@ shinyUI(fluidPage(
              plotlyOutput(outputId = "specific_season", width = "50%")
       )
     )
-  )
-)
+  ))
 )
