@@ -31,10 +31,10 @@ shinyServer(function(input, output, session) {
   })
   
   serie <- reactive({
-    series[series$series_name == input$serie & series$season == input$season,]
+    series[series$series_name == input$serie,]
   })
   
-  output$plot <- renderPlotly({
+  output$general <- renderPlotly({
     graph <- 
       ggplot(serie(), aes(x=series_ep, y=UserRating, colour="lightslateblue", alpha=season)) + 
       theme_bw() +
@@ -45,11 +45,27 @@ shinyServer(function(input, output, session) {
       scale_alpha_continuous(range = c(0.3, 1)) +
       theme(legend.title=element_blank()) +
       theme(legend.position="none") +
-      labs(title=paste("Variação das notas dos usuários por episódio <br>", serie()$series_name), x="Episódio", y="")
+      labs(title=serie()$series_name, x="Episódio da série", y="")
     
     ggplotly(graph, tooltip = c("text"), width = 800) %>%
       layout(autosize=TRUE)
 
   })
   
+  output$specific_season <- renderPlotly({
+    specific_season <- 
+      ggplot(serie()[serie()$season == input$season,], aes(x=season_ep, y=UserRating, alpha=season)) + 
+      theme_bw() +
+      geom_smooth(size=.5, method = 'loess', alpha=.2, 
+                  colour="lightslateblue", fill="lightslateblue") +
+      geom_point(aes(text=paste('Nome:', Episode, '<br>Nota:', UserRating, 
+                                '<br>Temporada:', season, '<br>Episódio:', season_ep)),
+                 colour="lightslateblue", size=.9) +
+      theme(legend.title=element_blank()) +
+      theme(legend.position="none") +
+      labs(title=paste("Temporada ", serie()$season), x="Episódio da temporada", y="")
+    
+    ggplotly(specific_season, tooltip = c("text"), width = 500) %>%
+      layout(autosize=TRUE)
+  })
 })
