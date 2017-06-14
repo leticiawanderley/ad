@@ -24,30 +24,32 @@ shinyUI(fluidPage(
     fluidRow(
       column(3,
              selectInput("serie", label = h4("Selecione sua série"), 
-                         choices = list("13 Reasons Why", "How to Get Away with Murder", "Mr Robot",
-                                        "Sense8", "Sherlock", "Black Mirror", "Breaking Bad",
-                                        "Dexter", "House of Cards", "Stranger Things", "Arrow",
-                                        "Gotham", "Grey’s Anatomy"), selected = "13 Reasons Why"))
-      ),
-      column(9,
+                         choices = unique(series$series_name), selected = "13 Reasons Why")
+             )
+    ),
+    br(),
+    fluidRow(
+      column(8,
              plotlyOutput(outputId = "general", width = "100%")
+      ),
+      column(1,
+             p("teste teste stes")
       )
     ),
-    
-    
     br(),
     hr(),
     br(),
     
     fluidRow(
-      column(3,
+      column(2,
              selectInput("season", "Temporada:", 
                          choices = unique(series$season),
                          selected = 1)
       ),
-      column(7,
+      column(7, offset=1,
              plotlyOutput(outputId = "specific_season", width = "50%")
       )
     )
   )
+)
 )

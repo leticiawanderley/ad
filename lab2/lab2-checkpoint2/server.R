@@ -18,7 +18,6 @@ shinyServer(function(input, output, session) {
   
   observe({
     x <- input$serie
-    print(unique(series[series$series_name == x,]$season))
     
     # Can use character(0) to remove all choices
     if (is.null(x))
@@ -36,12 +35,13 @@ shinyServer(function(input, output, session) {
   
   output$general <- renderPlotly({
     graph <- 
-      ggplot(serie(), aes(x=series_ep, y=UserRating, colour="lightslateblue", alpha=season)) + 
+      ggplot(serie(), aes(x=series_ep, y=UserRating, alpha=season)) + 
       theme_bw() +
-      geom_smooth(aes(colour="lightslateblue", fill=series_name),
-                  size=.5, method = 'loess', alpha=.2) +
+      geom_smooth(size=.5, method = 'loess', alpha=.2, 
+                  colour="lightslateblue", fill="lightslateblue") +
       geom_point(aes(text=paste('Nome:', Episode, '<br>Nota:', UserRating, 
-                                '<br>Temporada:', season, '<br>Episódio:', series_ep)), size=.9) +
+                                '<br>Temporada:', season, '<br>Episódio:', series_ep)), 
+                 colour="lightslateblue", size=.9) +
       scale_alpha_continuous(range = c(0.3, 1)) +
       theme(legend.title=element_blank()) +
       theme(legend.position="none") +
@@ -57,15 +57,16 @@ shinyServer(function(input, output, session) {
       ggplot(serie()[serie()$season == input$season,], aes(x=season_ep, y=UserRating, alpha=season)) + 
       theme_bw() +
       geom_smooth(size=.5, method = 'loess', alpha=.2, 
-                  colour="lightslateblue", fill="lightslateblue") +
+                  colour="aquamarine3", fill="aquamarine3") +
       geom_point(aes(text=paste('Nome:', Episode, '<br>Nota:', UserRating, 
                                 '<br>Temporada:', season, '<br>Episódio:', season_ep)),
-                 colour="lightslateblue", size=.9) +
+                 colour="aquamarine3", size=.9) +
       theme(legend.title=element_blank()) +
       theme(legend.position="none") +
-      labs(title=paste("Temporada ", serie()$season), x="Episódio da temporada", y="")
+      labs(title=paste(serie()$series_name,
+                       " - Temporada ", serie()$season), x="Episódio da temporada", y="")
     
-    ggplotly(specific_season, tooltip = c("text"), width = 500) %>%
+    ggplotly(specific_season, tooltip = c("text"), width = 480) %>%
       layout(autosize=TRUE)
   })
 })
