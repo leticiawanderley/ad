@@ -32,8 +32,12 @@ shinyUI(fluidPage(
       column(8,
              plotlyOutput(outputId = "general", width = "100%")
       ),
-      column(1,
-             p("teste teste stes")
+      column(4,
+             div("O objetivo desta visualização é observar o comportamento das notas dos episódios de uma série por toda sua duração. 
+                 De acordo com a distribuição das notas se pode traçar uma tendência de avaliações e tentar prever como as notas das 
+                 séries se comportaram do momento atual em diante.", 
+              style = "font-family: 'times'; font-size: 16pt; text-align: justify; text-justify: inter-word;"
+             )
       )
     ),
     br(),
@@ -41,12 +45,16 @@ shinyUI(fluidPage(
     br(),
     
     fluidRow(
-      column(2,
+      column(3,
              selectInput("season", "Temporada:", 
                          choices = unique(series$season),
-                         selected = 1)
+                         selected = 1),
+             div("Neste painel se pode escolher um temporada específica da série selecionada, 
+                 e observar a tendência de notas dos episódios da temporada.", 
+              style = "font-family: 'times'; font-size: 14pt; text-align: justify; text-justify: inter-word;"
+             )
       ),
-      column(7, offset=1,
+      column(7, 
              plotlyOutput(outputId = "specific_season", width = "50%")
       )
     )

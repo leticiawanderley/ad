@@ -56,11 +56,10 @@ shinyServer(function(input, output, session) {
     specific_season <- 
       ggplot(serie()[serie()$season == input$season,], aes(x=season_ep, y=UserRating, alpha=season)) + 
       theme_bw() +
-      geom_smooth(size=.5, method = 'loess', alpha=.2, 
-                  colour="aquamarine3", fill="aquamarine3") +
+      geom_line(size=.5, colour="aquamarine3", alpha=.3) +
       geom_point(aes(text=paste('Nome:', Episode, '<br>Nota:', UserRating, 
                                 '<br>Temporada:', season, '<br>Episódio:', season_ep)),
-                 colour="aquamarine3", size=.9) +
+                 colour="aquamarine3") +
       theme(legend.title=element_blank()) +
       theme(legend.position="none") +
       labs(title=paste(serie()$series_name,
