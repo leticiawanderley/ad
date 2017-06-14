@@ -8,6 +8,10 @@
 #
 
 library(shiny)
+library(tidyverse)
+library(plotly)
+
+series <- read_csv("series_from_imdb.csv")
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -16,16 +20,22 @@ shinyUI(fluidPage(
   titlePanel("Lab 2 - Checkpoint 2"),
   
   # Sidebar with a slider input for number of bins 
-  sidebarLayout(
+  sidebarLayout(position = "right",
     sidebarPanel(
-      selectInput("select", label = h3("Select box"), 
-                  choices = list("Choice 1" = 1, "Choice 2" = 2,
-                                 "Choice 3" = 3), selected = 1)
+      selectInput("serie", label = h3("Selecione sua série"), 
+                  choices = list("13 Reasons Why", "How to Get Away with Murder", "Mr Robot",
+                                 "Sense8", "Sherlock", "Black Mirror", "Breaking Bad",
+                                 "Dexter", "House of Cards", "Stranger Things", "Arrow",
+                                 "Gotham", "Grey’s Anatomy"), selected = "13 Reasons Why"),
+      
+      selectInput("season", "Temporada:", 
+                  choices = unique(series$season),
+                  selected = 1)
     ),
     
     # Show a plot of the generated distribution
     mainPanel(
-       plotOutput("plot")
+       plotlyOutput(outputId = "plot", width = "100%")
     )
   )
 ))

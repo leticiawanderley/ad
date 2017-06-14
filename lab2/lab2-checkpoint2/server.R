@@ -9,16 +9,47 @@
 
 library(shiny)
 library(tidyverse)
+library(plotly)
 
-series <- read_csv("../series_from_imdb.csv")
+series <- read_csv("series_from_imdb.csv")
 
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
-   
-  output$plot <- renderPlot({
+shinyServer(function(input, output, session) {
+  
+  observe({
+    x <- input$serie
+    print(unique(series[series$series_name == x,]$season))
     
-    chartSeries(series, theme = chartTheme("white"), 
-                type = "line", log.scale = input$log, TA = NULL)
+    # Can use character(0) to remove all choices
+    if (is.null(x))
+      x <- character(0)
+    
+    # Can also set the label and select items
+    updateSelectInput(session, "season",
+                      choices = unique(series[series$series_name == x,]$season)
+    )
+  })
+  
+  serie <- reactive({
+    series[series$series_name == input$serie & series$season == input$season,]
+  })
+  
+  output$plot <- renderPlotly({
+    graph <- 
+      ggplot(serie(), aes(x=series_ep, y=UserRating, colour="lightslateblue", alpha=season)) + 
+      theme_bw() +
+      geom_smooth(aes(colour="lightslateblue", fill=series_name),
+                  size=.5, method = 'loess', alpha=.2) +
+      geom_point(aes(text=paste('Nome:', Episode, '<br>Nota:', UserRating, 
+                                '<br>Temporada:', season, '<br>Episódio:', series_ep)), size=.9) +
+      scale_alpha_continuous(range = c(0.3, 1)) +
+      theme(legend.title=element_blank()) +
+      theme(legend.position="none") +
+      labs(title=paste("Variação das notas dos usuários por episódio <br>", serie()$series_name), x="Episódio", y="")
+    
+    ggplotly(graph, tooltip = c("text"), width = 800) %>%
+      layout(autosize=TRUE)
+
   })
   
 })
