@@ -1,0 +1,99 @@
+---
+title: "lab3-checkpoint1"
+author: "Leticia Wanderley"
+date: "16 de junho de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse, warn.conflicts = F)
+library(rvest)
+library(plotly)
+library(cluster)
+library(ggdendro)
+```
+
+## Nicole Kidman
+
+```{r films}
+from_page <- read_html("https://www.rottentomatoes.com/celebrity/nicole_kidman/") %>% 
+    html_node("#filmographyTbl") %>% # A sintaxe da expressão é de um seletor à lá JQuery: https://rdrr.io/cran/rvest/man/html_nodes.html 
+    html_table(fill=TRUE) %>% # Faz parse
+    as_tibble()
+
+filmes = from_page %>% 
+    filter(RATING != "No Score Yet", 
+           `BOX OFFICE` != "—", 
+           CREDIT != "Executive Producer",
+           CREDIT != "Producer") %>%
+    mutate(RATING = as.numeric(gsub("%", "", RATING)), 
+           `BOX OFFICE` = as.numeric(gsub("[$|M]", "", `BOX OFFICE`))) %>% 
+    filter(`BOX OFFICE` >= 1)
+```
+
+Analisando a distribuição de ratings dos filmes:
+```{r}
+filmes %>% 
+    ggplot(aes(x = "Filmes", y = RATING)) + 
+    geom_jitter(width = .01, height = 0, size = 2, alpha = .6)
+
+filmes %>% 
+    ggplot(aes(x = RATING)) + 
+    geom_histogram(bins = 16) + 
+    geom_rug()
+```
+
+Analisando a distribuição de box offices dos filmes:
+```{r}
+filmes %>% 
+    ggplot(aes(x = "Filmes", y = `BOX OFFICE`)) + 
+    geom_jitter(width = .01, height = 0, size = 2, alpha = .6)
+
+filmes %>% 
+    ggplot(aes(x = `BOX OFFICE`)) + 
+    geom_histogram(bins = 16) + 
+    geom_rug()
+```
+
+Observando o box office em escala logarítmica:
+```{r}
+filmes %>% 
+    ggplot(aes(x = "Filmes", y = `BOX OFFICE`)) + 
+    geom_jitter(width = .02, height = 0, size = 2, alpha = .6) + 
+    scale_y_log10()
+
+filmes %>% 
+    ggplot(aes(x = `BOX OFFICE`)) + 
+    geom_histogram(bins = 20) + 
+    scale_x_log10() + 
+    geom_rug()
+```
+
+Relacionando as duas variáveis:
+```{r}
+filmes %>% 
+    ggplot(aes(x = RATING, y = `BOX OFFICE`, label = TITLE)) + 
+    geom_point() 
+
+agrupamento_h_2d = filmes %>% 
+    column_to_rownames("TITLE") %>%
+    select(RATING, `BOX OFFICE`) %>%
+    dist(method = "euclidean") %>% 
+    hclust(method = "centroid")
+
+ggdendrogram(agrupamento_h_2d, rotate = TRUE)
+```
+
+Com escala:
+```{r}
+agrupamento_h_2d = filmes %>% 
+    column_to_rownames("TITLE") %>%
+    select(RATING, `BOX OFFICE`) %>% 
+    mutate(`BOX OFFICE` = log10(`BOX OFFICE`)) %>% 
+    mutate_all(funs(scale)) %>% 
+    dist(method = "euclidean") %>% 
+    hclust(method = "centroid")
+
+ggdendrogram(agrupamento_h_2d, rotate = TRUE)
+```
