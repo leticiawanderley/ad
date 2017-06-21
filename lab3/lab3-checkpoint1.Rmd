@@ -42,7 +42,7 @@ plota_hclusts_2d = function(agrupamento,
 ```
  
 # Tipos de filme de Emma Watson
-![Emma Watson](Emma-Watson.jpg)
+![](Emma-Watson.jpg)
  
 Emma Watson, aka Hermione Granger, e está se tornando uma atriz de peso em Hollywood. Diferente de muitos atores mirins ela vem, na fase adulta, alcançando bastante espaço na indústria cinematográfica. Seus projetos fora da tela do cinema, como o [HeForShe](http://www.heforshe.org/en), demonstram que ela não tem medo de se posicionar de acordo com suas opiniões. Será que essa força de vontade também se reflete nos papéis que ela escolhe retratar, são eles pouco populares?
  
@@ -107,7 +107,7 @@ O processo de agrupamento consiste em definir o que se considera distância entr
  
 Para agrupar as variáveis individualmente se utilizará o dendograma, um diagrama de árvore que relaciona grupos hierarquicamente com arestas e nós.
  
-### Rating atribuido no RottenTomatoes
+### Rating atribuído no RottenTomatoes
  
 O diagrama mostra as similaridades dos filmes baseando-se na nota que eles receberam no Rotten Tomatoes, quanto mais comprida é a ligação entre dois grupos mais diferentes os são grupos. A linha é uma sugestão de onde deveria haver a separação de grupos. Nesse caso é sugerido que se tenha três grupos distintos.
  
@@ -132,7 +132,6 @@ data.frame(k = 1:NROW(agrupamento_h$height),
     geom_line(colour = "navy", alpha=.5) + 
     geom_point(colour = "navy") + 
     labs(x = "Junções feitas (15 - grupos)", y = "Diferença na junção", title="Rating")
- 
 ```
  
 ### Box Office
@@ -188,19 +187,6 @@ plota_hclusts_2d(agrupamento_h_2d,
                  filmes2, 
                  c("RATING", "`BOX OFFICE`", "TITLE"), 
                  linkage_method = "centroid", ks = 1:6) + scale_y_log10()
-```
- 
-A silhueta, que representa o quão mais perto do seu grupo um ponto estão com relação ao segundo grupo mais próximo, mostra que mesmo com 5 grupos ainda existem alguma indefinição entre os pontos.
- 
-```{r, message=FALSE, warning=FALSE, echo=FALSE, error=FALSE}
-distancias = filmes %>% 
-    column_to_rownames("TITLE") %>%
-    select(RATING, `BOX OFFICE`) %>% 
-    mutate(`BOX OFFICE` = log10(`BOX OFFICE`)) %>% 
-    mutate_all(funs(scale)) %>% 
-    dist(method = "euclidean")
- 
-plot(silhouette(cutree(agrupamento_h_2d, k = 5), distancias))
 ```
  
 ## Agrupamento escolhido
