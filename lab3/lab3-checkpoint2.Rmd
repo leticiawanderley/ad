@@ -1,0 +1,34 @@
+---
+title: "Lab3 Checkpoint2"
+author: "Leticia Wanderley"
+date: "23 de junho de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse, warn.conflicts = F)
+library(rvest)
+library(plotly)
+library(cluster)
+library(ggdendro)
+theme_set(theme_light())
+```
+
+## Agrupamento de mais dados em mais dimensões 
+
+Variáveis: ano, (quantidade de personagens femininos/quantidade de personagens), (número de palavras de personagens femininos/números de palavras), idade média dos personagens
+
+```{r loaddata}
+roles <- read_csv("character_list5.csv")
+films <- read_csv("meta_data7.csv")
+merged <- left_join(films, roles, by="script_id")
+merged <- select(merged, -lines_data)
+merged <- na.omit(merged)
+
+merged %>%
+  group_by(title) %>%
+  summarise()
+```
+
+
