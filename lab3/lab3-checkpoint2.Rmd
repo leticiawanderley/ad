@@ -39,8 +39,10 @@ data <-  merged %>%
   group_by(title, year, gross) %>%
   summarise(fem_characters=length(gender[gender=="f"])/length(gender),
             fem_words=sum(words[gender=="f"])/sum(words),
-            character_words=ifelse(fem_characters!=0.0, fem_words/fem_characters, 0),
-            median_age=median(age,  na.rm=TRUE))
+            character_words=ifelse(fem_characters!=0.0, log2(fem_words/fem_characters), 0),
+            median_age=median(age,  na.rm=TRUE)) %>% ungroup()
+
+data <- na.omit(data)
 ```
 
 ### K-Means
@@ -49,5 +51,6 @@ n_clusters = 4
 km = data %>% 
     select(-title) %>%  
     kmeans(centers = n_clusters, nstart = 20)
+
 
 ```
