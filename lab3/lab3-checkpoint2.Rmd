@@ -7,17 +7,22 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+require(GGally, quietly = TRUE)
+require(reshape2, quietly = TRUE)
 library(tidyverse, warn.conflicts = F)
 library(rvest)
 library(plotly)
+library(ggfortify)
 library(cluster)
 library(ggdendro)
+library(broom)
 theme_set(theme_light())
 ```
 
 ## Agrupamento de mais dados em mais dimensões 
 
-Variáveis: ano, (quantidade de personagens femininos/quantidade de personagens), (número de palavras de personagens femininos/números de palavras), idade média dos personagens
+### Tratando dados
+Variáveis: ano, (quantidade de personagens femininos/quantidade de personagens), (número de palavras de personagens femininos/números de palavras), idade mediana dos personagens
 
 ```{r loaddata}
 roles <- read_csv("character_list5.csv")
@@ -25,10 +30,24 @@ films <- read_csv("meta_data7.csv")
 merged <- left_join(films, roles, by="script_id")
 merged <- select(merged, -lines_data)
 merged <- na.omit(merged)
-
-merged %>%
-  group_by(title) %>%
-  summarise()
+merged$age <- as.numeric(as.character(merged$age))
 ```
 
+Calculando índices de personagens femininas, de palavras faladas por personagens femininas, relação entre quantidade e palavras faladas por personagens femininas e mediana da idade.
+```{r treatdata}
+data <-  merged %>%
+  group_by(title, year, gross) %>%
+  summarise(fem_characters=length(gender[gender=="f"])/length(gender),
+            fem_words=sum(words[gender=="f"])/sum(words),
+            character_words=ifelse(fem_characters!=0.0, fem_words/fem_characters, 0),
+            median_age=median(age,  na.rm=TRUE))
+```
 
+### K-Means
+```{r}
+n_clusters = 4
+km = data %>% 
+    select(-title) %>%  
+    kmeans(centers = n_clusters, nstart = 20)
+
+```
