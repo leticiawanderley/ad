@@ -53,7 +53,8 @@ km = data %>%
     kmeans(centers = n_clusters, nstart = 10) %>% augment(data)
 
 km %>%
-    ggplot(aes(x = gross, y = median_age, label = title, colour = .cluster)) + 
-    geom_point() 
+    ggplot(aes(x = fem_characters, y = character_words, label = title, colour = .cluster)) + 
+    geom_line(alpha = .5) + 
+    facet_wrap(~ .cluster) 
 
 ```
