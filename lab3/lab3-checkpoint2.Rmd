@@ -64,6 +64,7 @@ K-Means clustering é um método de quantização vetorial que separa as _n_ ins
 O K-Means é muito sensível a variações nos intervalos de distribuição de valores de dados, por isso é muito importante que os dados sejam normalizados. 
 
 ```{r}
+set.seed(12)
 n_clusters = 4
 km = data.scaled %>% 
     select(-title) %>%  
@@ -74,7 +75,7 @@ autoplot(km, data=data.scaled)
 No caso dessa análise foi decidido se separar as instâncias em 4 clusters distintos. Essa decisão não foi completamente desinformada. Ela foi baseada na exploração de vários valores de número de clusters. O valor de betweeness/toss gráfico mostra que a distância média entre todos os pontos de um cluster para o seu centro diminui à medida que se aumenta o número de clusters, até eventualmente atingir o valor máximo, quando cada instância é o centro de um cluster. O valor escolhido, o foi porque representa a posição onde a diminuição de distância até o centro do cluster começa a crescer mais devagar.
 
 ```{r, warning=FALSE}
-set.seed(123)
+set.seed(12)
 exploring_k = tibble(k = 1:15) %>% 
     group_by(k) %>% 
     do(
