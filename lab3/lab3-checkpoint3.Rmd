@@ -1,0 +1,41 @@
+---
+title: "Lab 3 Checkpoint 3"
+author: "Leticia Wanderley"
+date: "14 de julho de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse) 
+library(broom) # facilita lidar com modelos como data frames
+library(ggfortify, quietly = TRUE) # plots para modelos
+require(GGally, quietly = TRUE)
+library(knitr, quietly = TRUE)
+library(cluster)
+
+theme_set(theme_bw())
+```
+
+## PCA
+
+OS dados utilizados são uma junção de um conjunto de filmes retirado do [IMDb](http://www.imdb.com/) com o conjunto de personagens e suas respectivas falas retirados dos scripts desses filmes. Os dados podem ser encontrados [neste repositorio](https://github.com/matthewfdaniels/scripts).
+
+```{r loaddata, message=FALSE, warning=FALSE}
+roles <- read_csv("character_list5.csv")
+films <- read_csv("meta_data7.csv")
+merged <- left_join(films, roles, by="script_id")
+merged <- select(merged, -lines_data)
+merged <- na.omit(merged)
+merged$age <- as.numeric(as.character(merged$age))
+
+data <-  merged %>%
+  group_by(title, year, gross) %>%
+  summarise(median_age=median(age,  na.rm=TRUE),
+            fem_characters=length(gender[gender=="f"])/length(gender),
+            fem_words=sum(words[gender=="f"])/sum(words),
+            character_words=ifelse(fem_characters!=0.0, log2(fem_words/fem_characters), -1)) %>% ungroup()
+data <- na.omit(data)
+data.scaled = data %>% 
+  mutate_each(funs(as.vector(scale(.))), 2:7)
+```
+
