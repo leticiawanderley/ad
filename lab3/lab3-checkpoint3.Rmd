@@ -59,9 +59,9 @@ O procedimento do PCA tenta reduzir a dimensionalidade agrupando varáveis corre
 ```{r dimvectors}
 autoplot(pr.out, data = data, size = 2, 
          colour = "grey",
-         loadings = TRUE, loadings.colour = 'chartreuse3',
+         loadings = TRUE, loadings.colour = 'deeppink3',
          loadings.label = TRUE, 
-         loadings.label.size = 3,
+         loadings.label.size = 3.5,
          loadings.label.colour='navy')
 ```
 
