@@ -12,6 +12,7 @@ library(ggfortify, quietly = TRUE) # plots para modelos
 require(GGally, quietly = TRUE)
 library(knitr, quietly = TRUE)
 library(cluster)
+library(plotly)
 
 theme_set(theme_bw())
 ```
@@ -20,7 +21,9 @@ theme_set(theme_bw())
 
 OS dados utilizados são uma junção de um conjunto de filmes retirado do [IMDb](http://www.imdb.com/) com o conjunto de personagens e suas respectivas falas retirados dos scripts desses filmes. Os dados podem ser encontrados [neste repositorio](https://github.com/matthewfdaniels/scripts).
 
-```{r loaddata, message=FALSE, warning=FALSE}
+> Para melhor analisar os dados foram criadas três novas colunas, representando a porcentagem de falas de personagens femininas comparadas com o total falas de personagens do filme, a porcentagem de personagens femininas no filme e um índice que representa a presença relativa de falas de personagens femininas nos filmes, a razão entre a porcentagem de falas de personagens femininas e a porcentagem de personagens femininas. 
+
+```{r loaddata, include=FALSE, message=FALSE, warning=FALSE}
 roles <- read_csv("character_list5.csv")
 films <- read_csv("meta_data7.csv")
 merged <- left_join(films, roles, by="script_id")
@@ -35,7 +38,55 @@ data <-  merged %>%
             fem_words=sum(words[gender=="f"])/sum(words),
             character_words=ifelse(fem_characters!=0.0, log2(fem_words/fem_characters), -1)) %>% ungroup()
 data <- na.omit(data)
-data.scaled = data %>% 
-  mutate_each(funs(as.vector(scale(.))), 2:7)
 ```
 
+Ao todo existem seis atributos numéricos para cada filme, são eles: renda, ano de lançamento, idade mediana dos personagens, porcentagem de personagens femininas, porcentagem de falas de personagens femininas e índice relativo de presença de falas de personagens femininas do filme. Seria muito complicado analisar o conjunto de dados em seis dimensões distintas. O cerébro humano consegue distinguir relativamente bem, no máximo, três dimensões. Por esse motivo, se fará uso de uma técnica de redução de dimensionalidade. 
+
+> Redução de dimensionalidade consiste no processo de redução do número de variáveis em um conjunto de dados. Esse processo pode ser divido em _seleção de atríbutos_, processo no qual se seleciona os atributos mais significativos para representar o conjunto de dados, e _extração de atríbutos_, processo no qual se transforma um conjunto grande de varíaveis em um conjunto menor sem perder muito da significância do conjunto.
+
+Para esta análise será uma técnica de extração de atributos chamada __Análise de Componentes Principais__ ou Principal Components Analysis (PCA). Nessa técnica as n colunas/atributos/dimensões de um conjunto de dados são transformadas em um número menor de variáveis não relacionadas, os componentes principais. No gráfico abaixo se pode observar os dois componentes principais do conjunto de dados de filmes analisado.
+
+```{r pca}
+pr.out <- prcomp(select(data, -title), scale=TRUE)
+
+autoplot(pr.out, data = data, size = 2,  
+         loadings = FALSE)
+```
+
+O procedimento do PCA tenta reduzir a dimensionalidade agrupando varáveis correlacionadas em um único componente principal. Para isso ele analisa a variância das dimensões dentro do conjunto e agrupa aquelas que tem variância e tendência de crescimento ou decrescimento semelhantes. 
+
+```{r dimvectors}
+autoplot(pr.out, data = data, size = 2, 
+         colour = "grey",
+         loadings = TRUE, loadings.colour = 'blue',
+         loadings.label = TRUE, 
+         loadings.label.size = 3)
+```
+
+No exemplo analisado, para calcular o componente principal 1 (PC1) as dimensões com maior relevância foram character_words, fem_words, fem_characters e median_age. As três primeiras apresentam comportamento semelhante, a medida que um ponto (filme) se move para a esquerda no eixo x o valor das três aumenta, já com relação a idade mediana o comportamente é inverso, a idade mediana das personagens do filme aumenta a medida que se anda para a direita no eixo x. As dimensões de gross e year tem pouca influência no valor do PC1, isso pode ser observado pela inclinação pequena dos os vetores das duas em relação ao eixo x. Para calcular o componente principal 2 (PC2) as dimensões com maior relavância foram gross e year, a renda e o ano de lançamento do filme, respectivamente. A medida que um ponto (filme) sobe do eixo y o valor de gross aumenta e o valor de year diminui. As duas dimensões são quase inversamente proporcionais. Entre as dimensões restantes, a que parece ter maior influência no valor de PC2 é character_words, o valor dessa coluna aumenta a medida que se sobe no eixo y.
+
+Na tabela abaixo se pode ver as funções de cada dimensão no cálculo dos componentes principais.
+
+```{r pcatable}
+tidy(pr.out, "variables") %>% 
+    filter(PC <= 2) %>% 
+    spread(column, value)
+```
+
+Relembrando a distribuição dos grupos:
+O grupo 1, **#GirlPower**, tem mais personagens femininas e mais falas de personagens femininas que a média geral e isso faz com que a relação entre essas duas variáveis também fique mais positiva/maior. O grupo 2, **Mulher de enfeite** tem alta presença de personagens femininas mas estas personagens tem poucas falas se comparadas as falas masculinas. O grupo 3, **It's a Man's World** tem poucas personagens femininas e poucos diálogos vindos dessas personagens, como os dois valores são baixos a relação entre eles se torna positiva também. O grupo 4, **Populares**, difere principalmente na renda de seus filmes, é uma renda maior que a tendência do conjunto, já para valores de presença e diálogos femininos ele apresenta valores dentro da média.
+
+```{r interactive, message=FALSE, warning=FALSE}
+data.scaled = data %>% 
+  mutate_each(funs(as.vector(scale(.))), 2:7)
+set.seed(12)
+n_clusters = 4
+km = data.scaled %>% 
+    select(-title) %>%  
+    kmeans(centers = n_clusters, nstart = 10) #Aplicando KMeans
+df = data.frame(pr.out$x, title=data$title) #Aplicando resultados do PCA
+p = km %>% augment(df) %>% 
+    ggplot(aes(x = PC1, y = PC2, colour = .cluster)) +
+    geom_point(aes(text=paste('Filme:', title)), size=1, alpha=0.8)
+ggplotly(p) #Plotando grafico das duas aplicacoes
+```
