@@ -96,7 +96,7 @@ ggplotly(p)
 O grupo 1, **#GirlPower**, tem mais personagens femininas e mais falas de personagens femininas que a média geral e isso faz com que a relação entre essas duas variáveis também fique mais positiva/maior. O grupo 2, **Mulher de enfeite** tem alta presença de personagens femininas mas estas personagens tem poucas falas se comparadas as falas masculinas. O grupo 3, **It's a Man's World** tem poucas personagens femininas e poucos diálogos vindos dessas personagens, como os dois valores são baixos a relação entre eles se torna positiva também. O grupo 4, **Populares**, difere principalmente na renda de seus filmes, é uma renda maior que a tendência do conjunto, já para valores de presença e diálogos femininos ele apresenta valores dentro da média.
 
 ### O quanto de informação é representada pelos componentes principais?
-```{r, message=FALSE, warning=FALSE, echo=FALSE}
+```{r, message=FALSE, warning=FALSE}
 tidy(pr.out, "pcs") %>% 
     ggplot(aes(x = PC, y = cumulative)) + 
     geom_line() + 
