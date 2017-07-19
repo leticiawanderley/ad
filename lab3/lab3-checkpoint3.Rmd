@@ -76,7 +76,7 @@ tidy(pr.out, "variables") %>%
 ```
 
 ### Relembrando a distribuição dos grupos:
-```{r interactive, message=FALSE, warning=FALSE}
+```{r interactive, message=FALSE, warning=FALSE, fig.width=10, fig.height=8}
 data.scaled = data %>% 
   mutate_each(funs(as.vector(scale(.))), 2:7)
 set.seed(12)
@@ -107,4 +107,4 @@ tidy(pr.out, "pcs") %>%
               que esses PCs representam")
 ```
 
-__O gráfico acima mostra que 2 componentes principais representam 56.115% da variância do conjunto de dados.__
+O gráfico acima mostra que 2 componentes principais representam 56.115% da variância do conjunto de dados. Isto significa que após a aplicação da técnica de redução de dimensionalidade PCA ao escolher dois componentes principais os mesmos terão capacidade de atribuir um pouco mais da metade da significância dos dados originais.
