@@ -1,0 +1,22 @@
+---
+title: "Lab 4 Checkpoint 1"
+date: "25 de julho de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+```
+
+## Lab 4 Checkpoint 1
+
+Para essa análise será usada uma amostra de dados de atividade de commits de usuários do [github](https://github.com/). Cada entrada desse conjunto de dados é composta pelo código da extensão da linguagem, e.g., py para Python e md para Markdown, a contagem de commits feitos naquela linguagem e os valores de dia, mês e ano referentes à medição.
+
+```{r read}
+commits <- read_csv("github-users-committing-filetypes.csv")
+glimpse(commits)
+
+commits_data = commits %>% mutate(date=wday(as.Date(paste(the_year, the_month, month_day, sep="-")), label=TRUE))
+```
