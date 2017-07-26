@@ -8,15 +8,205 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(lubridate)
+library(resample)
+theme_set(theme_bw())
+
+weekdays <- c("Mon", "Tues", "Wed", "Thurs", "Fri")
+day.of.week <- function(year, month, day) {
+    wday(as.Date(paste(year, month, day, sep="-")), label=TRUE)
+}
+
+week.or.weekend <- function(data) {
+    data %>% 
+        mutate(wowe=ifelse(day.of.week(the_year, the_month, month_day) %in% weekdays, "week", "weekend"),
+               date=as.Date(paste(the_year, the_month, month_day, sep="-")))
+}
 ```
 
 ## Lab 4 Checkpoint 1
 
-Para essa análise será usada uma amostra de dados de atividade de commits de usuários do [github](https://github.com/). Cada entrada desse conjunto de dados é composta pelo código da extensão da linguagem, e.g., py para Python e md para Markdown, a contagem de commits feitos naquela linguagem e os valores de dia, mês e ano referentes à medição.
+Para essa análise será usada uma amostra de dados de atividade de commits de usuários do [github](https://github.com/). Cada entrada desse conjunto de dados é composta pelo código da extensão da linguagem, e.g., py para Python e md para Markdown, a contagem de commits feitos naquela linguagem e os valores de dia, mês e ano referentes à medição. 
 
 ```{r read}
 commits <- read_csv("github-users-committing-filetypes.csv")
-glimpse(commits)
-
-commits_data = commits %>% mutate(date=wday(as.Date(paste(the_year, the_month, month_day, sep="-")), label=TRUE))
 ```
+
+O que se procura analisar, e comparar, é a frequência de commits de duas linguagens distintas durante a semana e durante o fim de semana. Para isso é preciso, primeiramente, escolher duas linguagens para a análise, serão elas __Javascript__ e __Python__, e filtrar o conjunto de dados selecionando apenas as linhas cuja extensão de arquivo representada é igual a __js__ ou __py__. Ao todo existem 497 entradas de usuários Javascript e 496 entradas de usuários Python.
+```{r filter}
+py_or_js <- commits %>% filter(file_extension %in% c("py", "js"))
+```
+
+Depois, com o objetivo de tornar a distinção entre semana e fim de semana mais simples, o dia da semana será extraído dos valores que representam a data e a informação se aquele dia é um fim de semana será armazenada em uma nova coluna. Se o dia da semana for igual a segunda, terça, quarta, quinta ou sexta feiras a coluna vai conter o valor _week_, caso contrário, o valor _weekend_.
+```{r weekday}
+py_or_js <- week.or.weekend(py_or_js)
+```
+
+```{r timeline.python}
+py_or_js %>% filter(file_extension=="py") %>% 
+    ggplot(aes(x=date, y=users)) +
+    geom_point(aes(colour=wowe)) +
+    labs(title="Usuários commitando em Python", x="Dia", y="Quantidade de usuários", colour="Semana/Fim de semana") 
+```
+
+```{r timeline.js}
+py_or_js %>% filter(file_extension=="js") %>% 
+    ggplot(aes(x=date, y=users)) +
+    geom_point(aes(colour=wowe)) +
+    labs(title="Usuários commitando em Javascript", x="Dia", y="Quantidade de usuários", colour="Semana/Fim de semana") 
+```
+Com esses passos já se tem o necessário para começar o processo de amostragem. 
+
+###Amostragem
+Como dito no ínicio, o conjunto de dados analisado é uma amostra de dados de commits no github, não se tem acesso a todo o conjunto de dados de commits (população). Para que se possa inferir, com algum grau de confiança, que a amostra tem alguma representatividade sobre o conjunto de dados é preciso encontrar a distribuição amostral de alguma estatística dentro da amostra, nesse caso a mediana. 
+
+**A distribuição amostral é a distribuição de probabilidades de uma estatística baseada em dados de uma amostra leatória. Permite quantificar quão longe da estatística da população está a estatítica da amostra.**
+
+Para estimar a distribuição amostral vai se utilizar uma técinica chamada _bootstrapping_, ela consiste na utilização da amostra como substituta da população. Com a realização de amostragem através de reamostragem da amostra, ou seja, serão criadas várias amostras "falsas" a partir da combinação com reposição da amostra original.
+
+###Há uma diferença significativa na sua popularidade da linguagem durante a semana e durante o fim de semana? Essa diferença é grande?
+####Python
+```{r bootstrapping.py}
+set.seed(1)
+py <- py_or_js %>% filter(file_extension == "py")
+
+py.week <- py %>% filter(wowe=="week")
+py.weekend <- py %>% filter(wowe=="weekend")
+
+reps = 5000
+
+median.py.week = bootstrap(py.week, 
+                        median(users), 
+                        R = reps) %>% 
+    CI.percentile(probs = c(.025, .975))
+median.py.week 
+
+median.py.weekend = bootstrap(py.weekend, median(users), R = reps) %>% 
+    CI.percentile(probs = c(.025, .975))
+median.py.weekend 
+```
+Os valores observados acima são as distribuições amostrais da mediana da quantidade de usuários fazendo commits em Python durante a semana e durante o fim de semana, respectivamente. Os valores mostram que existe 95% de confiança de que a mediana do número usuários que fazem commits em Python da população está entre 4668.5 e 4791.5, durante a semana e entre 2520.2 e 2644. durante o fim de semana. No gráfico abaixo se vê o comportamento dos valores.
+```{r median.py, warning=FALSE}
+df = data.frame(rbind(median.py.week,
+                      median.py.weekend))
+df$Mediana = c("Semana", "Fim de semana")
+
+df %>% 
+  ggplot(aes(x = Mediana, ymin = X2.5., ymax = X97.5.)) + 
+  geom_errorbar(width = .2)
+```
+
+Observando a diferença entre os valores de medianda de usuários commitando em Python durante a semana e no fim de semana se pode inferir que a popularidade da linguagem é maior durante a semana.
+
+####Javascript
+
+```{r bootstrapping.js}
+set.seed(1)
+js <- py_or_js %>% filter(file_extension == "js")
+
+js.week <- js %>% filter(wowe=="week")
+js.weekend <- js %>% filter(wowe=="weekend")
+
+reps = 5000
+
+median.js.week = bootstrap(js.week, 
+                        median(users), 
+                        R = reps) %>% 
+    CI.percentile(probs = c(.025, .975))
+median.js.week 
+
+median.js.weekend = bootstrap(js.weekend, median(users), R = reps) %>% 
+    CI.percentile(probs = c(.025, .975))
+median.js.weekend 
+```
+Os valores observados acima são as distribuições amostrais da mediana da quantidade de usuários fazendo commits em Javascript durante a semana e durante o fim de semana, respectivamente. Os valores mostram que existe 95% de confiança de que a mediana do número usuários que fazem commits em Javascript da população está entre 7072 e 7310, durante a semana e entre 4169.5 e 4450 durante o fim de semana. No gráfico abaixo se vê o comportamento dos valores.
+```{r median.js, warning=FALSE}
+df = data.frame(rbind(median.js.week,
+                      median.js.weekend))
+df$Mediana = c("Semana", "Fim de semana")
+
+df %>% 
+  ggplot(aes(x = Mediana, ymin = X2.5., ymax = X97.5.)) + 
+  geom_errorbar(width = .2)
+```
+
+Observando a diferença entre os valores de medianda de usuários commitando em Javascript durante a semana e no fim de semana se pode inferir que a popularidade da linguagem é maior durante a semana. Também é possível ver que globalmente existem mais usuários commitando em Javascript do que em Python, seja durante a semana, seja durante o fim de semana.
+
+###Existe uma diferença significativa entre as duas linguagens na sua variação de popularidade nos finais de semana?
+
+Para responder essa pergunta é preciso quantificar a popularidade das linguagens, nesse caso isso significa criar um índice para representar a diferença de usuários durante o fim de semana.
+
+No gráfico abaixo se pode observar as distribuições amostrais das diferenças entre número de usuários fazendo commits durante a semana e durante o fim de semana, tanto para Python quando para Javascript.
+```{r, warning=FALSE}
+set.seed(1)
+b = bootstrap2(data = py.weekend$users, 
+               data2 = py.week$users, 
+               median)
+medians.py.diff = CI.percentile(b, probs = c(.025, .975))
+medians.py.diff
+
+b2 = bootstrap2(data = js.weekend$users, 
+               data2 = js.week$users, 
+               median)
+medians.js.diff = CI.percentile(b2, probs = c(.025, .975))
+medians.js.diff
+
+data.frame(rbind(medians.py.diff, medians.js.diff)) %>% 
+  ggplot(aes(x = c("Python", "Javascript"), ymin = X2.5., ymax = X97.5.)) + 
+  geom_errorbar(width = .2) +
+  labs(title="Fim de semana - semana", x="")
+```
+
+```{r,include=FALSE}
+exp_com_bootstrap <- function(x){
+  boot_x <- sample(x, size = NROW(x), replace = TRUE)
+  return(median(boot_x))
+}
+
+##Python
+reamostragem.py.week = data_frame(i = 1:5000) %>% 
+  rowwise() %>% 
+  mutate(media_exp = exp_com_bootstrap(py.week$users)) 
+
+reamostragem.py.weekend = data_frame(i = 1:5000) %>% 
+  rowwise() %>% 
+  mutate(media_exp = exp_com_bootstrap(py.weekend$users)) 
+
+reamostragem.py.medians = cbind(reamostragem.py.week, reamostragem.py.weekend) 
+colnames(reamostragem.py.medians) <- c("i", "week", "i2", "weekend")
+reamostragem.py.medians = reamostragem.py.medians %>% 
+    mutate(weekend_prob=(weekend/week))
+
+##JS
+reamostragem.js.week = data_frame(i = 1:5000) %>% 
+  rowwise() %>% 
+  mutate(media_exp = exp_com_bootstrap(js.week$users)) 
+
+reamostragem.js.weekend = data_frame(i = 1:5000) %>% 
+  rowwise() %>% 
+  mutate(media_exp = exp_com_bootstrap(js.weekend$users)) 
+
+reamostragem.js.medians = cbind(reamostragem.js.week, reamostragem.js.weekend) 
+colnames(reamostragem.js.medians) <- c("i", "week", "i2", "weekend")
+reamostragem.js.medians = reamostragem.js.medians %>% 
+    mutate(weekend_prob=(weekend/week))
+```
+
+O gráfico abaixo mostra os resultados das distribuições amostrais das medianas dos índices de diferença entre usuários commitando no fim de semana e durante a semana. Esses dados foram calculados com o uso de reamostragem das medianas de uso durante semana e fim de semana e reamostragem das diferenças obtidas na reamostragem anterior. O cálculo da diferença se dá dividindo a quantidade mediana de usuários commitando durante o fim de semana pela quantidade de usuário commitando durante a semana.
+
+```{r, warning=FALSE}
+set.seed(1)
+
+medians.py.diffs = bootstrap(reamostragem.py.medians, median(weekend_prob), R = reps) %>% 
+    CI.percentile(probs = c(.025, .975))
+
+medians.js.diffs = bootstrap(reamostragem.js.medians, median(weekend_prob), R = reps) %>% 
+    CI.percentile(probs = c(.025, .975))
+
+data.frame(rbind(medians.py.diffs, medians.js.diffs)) %>% 
+  ggplot(aes(x = c("Python", "Javascript"), ymin = X2.5., ymax = X97.5.)) + 
+  geom_errorbar(width = .2) +
+  labs(title="Fim de semana/semana", x="")
+```
+
+Do gráfico se infere que, para a linguagem Javascript a quantidade de usuários commitando no fim de semana é cerca de 60% da quantidade de usuários commitando durante a semana. Já para Python a quantidade de usuários commitando no fim de semana é um pouco menos que 55% da quantidade mediana de usuários que commita durante a semana.
+Na minha opinião essa diferença não é muito significativa, são valores próximos e a qualquer momento eles podem variar, tornando Python mais popular nos fins de semana que Javascript.
