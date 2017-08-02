@@ -1,0 +1,173 @@
+---
+title: "Lab 4 Checkpoint 3"
+author: "Leticia Wanderley"
+date: "8/1/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+library(resample)
+theme_set(theme_bw())
+
+week.or.weekend <- function(data) {
+    data %>% 
+        mutate(
+          date=as.Date(paste(the_year, the_month, month_day, sep="-")),
+          wowe=ifelse(wday(date, label=TRUE) %in% c("Mon", "Tues", "Wed", "Thurs", "Fri"), "week", "weekend"),
+          week=week(date))
+}
+```
+
+## Lab 4 Checkpoint 3
+
+Para essa análise será usada uma amostra de dados de atividade de commits de usuários do [github](https://github.com/). Cada entrada desse conjunto de dados é composta pelo código da extensão da linguagem, e.g., py para Python e md para Markdown, a contagem de commits feitos naquela linguagem e os valores de dia, mês e ano referentes à medição. 
+As perguntas que serão respondidas neste relatório tratam, principalmente de variação do uso das linguagens durante um período de tempo. Por este motivo os dados foram trabalhados para apresentar informações de tempo mais facilmente.
+```{r read}
+commits <- read_csv("github-users-committing-filetypes.csv")
+```
+
+As linhas dados diários receberam uma flag indicando se aquele dia se tratava de um fim de semana ou um dia útil e uma coluna que contém a semana do ano à qual aquele dia pertence. Com estas informações foram calculadas, para cada linguagem em cada semana, a mediana de commits feitos por usuários durante o fim de semana e durante a semana. Por último foi calculado o índice de uso durante o fim de semana, para cada semana pertencente aos dados se calculou a razão entre a mediana de commits no fim de semana e a soma das medianas daquela semana (mediana do fim de semana + mediana do dias úteis).
+
+```{r treat, include=FALSE}
+commits <- week.or.weekend(commits)
+
+week.commits = commits %>%
+  group_by(file_extension, the_year, week, wowe) %>% 
+  summarize(median=median(users))
+
+week = week.commits %>% filter(wowe %in% c("week"))
+weekend = week.commits %>% filter(wowe %in% c("weekend"))
+
+wowe.diff = merge(week, weekend, by=c("file_extension","the_year", "week")) %>% 
+  group_by(file_extension, the_year, week) %>% 
+  summarize(diff=median.y/(median.x+median.y))
+```
+
+```{r glimpse}
+glimpse(wowe.diff)
+```
+
+### Minhas perguntas
+#### 1. Qual a linguagem que tem a popularidade mediana mais alta nos fins de semana? (Entre Python, Javascript, Java, Php, C, C++, CSharp, Go, Shellscript e Ruby)
+
+Para responder esta pergunta é preciso fazer a reamostragem das diferenças encontradas entre o uso durante o fim de semana e durante a semana. Essa reamostragem é feita para todas as linguagens analisadas e depois o intervalo de confiança das diferenças é calculado.
+```{r}
+set.seed(1)
+bootstrap.diffs <- function(language) {
+  reps = 5000
+  bootstrap(wowe.diff %>% filter(file_extension == language), median(diff), R = reps) %>% 
+    CI.percentile(probs = c(.025, .975))
+}
+```
+
+O gráfico abaixo mostra os intervalos de confiança encontrados para cada linguagem analisada. Os intervalos indicam qual é a representatividade da mediana de commits durante o fim de semana em relação a semana completa. Quanto mais próximo do 0, menor é a atividade durante o fim de semana, quanto mais longe, maior. É possível notar que por maior que seja a distância do zero nenhum valor passa de 0.5, ou seja, nenhuma das linguagens analisadas na amostra tem maior atividade durante o fim de semana em comparação com a semana.
+
+```{r languages, include=FALSE}
+set.seed(1)
+python <- bootstrap.diffs("py")
+javascript <- bootstrap.diffs("js")
+java <- bootstrap.diffs("java")
+php <- bootstrap.diffs("php")
+c <- bootstrap.diffs("c")
+cpp <- bootstrap.diffs("cpp")
+csharp <- bootstrap.diffs("cs")
+go <- bootstrap.diffs("go")
+shellscript <- bootstrap.diffs("sh")
+ruby <- bootstrap.diffs("rb")
+```
+
+```{r languages.diff, warning=FALSE}
+data.frame(rbind(python, javascript, java, php, c, cpp, csharp, go, shellscript, ruby)) %>% 
+  ggplot(
+    aes(x = c("Python", "Javascript", "Java", "Php", "C", "C++", "CSharp", "Go", "Shellscript", "Ruby"), 
+        ymin = X2.5., ymax = X97.5.)) + 
+  geom_errorbar(width = .2) +
+  labs(title="Popularidade mediana das linguagens durante fins de semana", x="Fins de semana/total")
+```
+
+O gráfico mostra que as linguagens __C++__ e __CSharp__ têm mais atividade de commits durante os fins de semana que todas as outras. Com base nessa análise não é possível afirmar qual das duas é a mais popular, pois seus intervalos estão quase completamente sobrepostos. Porém, se pode afirmar que dentro do cojunto de linguagens analisado elas são as mais populares e a linguagem __Ruby__ é a menos popular, durante os fins de semana.
+
+##### 1.1 É possível afirmar que C++ é mais popular que CSharp? Qual a significância da diferença entre as duas linguagens?
+```{r}
+set.seed(1)
+b = bootstrap2(data = (wowe.diff %>% filter(file_extension == "cpp"))$diff, 
+               data2 = (wowe.diff %>% filter(file_extension == "cs"))$diff, 
+               median)
+medians.diff = CI.percentile(b, probs = c(.025, .975))
+
+data.frame(rbind(medians.diff)) %>% 
+  ggplot(aes(x = "Diff", ymin = X2.5., ymax = X97.5.)) + 
+  geom_errorbar(width = .2) +
+  labs(title="Comparação entre as diferenças encontradas para C++ e CSharp", x="")
+```
+
+Não, não se pode assegurar que C++ sempre é mais popular que CSharp, ou vice-versa. O gráfico acima mostrar o intervalo de confiança da diferença entre os indíces de uso durante fins de semana das duas linguagens. O intervalo contém tanto valores negativos o que nos caso que acontecem significam que o índice de uso de CSharp é maior, quanto valores positivos que representam casos onde o índice de uso de C++ é maior. E o valor 0 que indica casos onde o índice de uso de C++ e de CSharp são iguais. Por esses motivos a diferença entre as linguagens não é significativa.
+
+#### 2. Qual foi a diferença da mediana de usuários de Go entre 2016 e 2017? 
+
+Utilizando um processo similar ao executado acima os dados referentes à linguagem Go foram filtrados e foi calculada a mediana de atividade de commits para cada semana dos anos 2016 e 2017. Depois disso as semana foram pareadas, i.e., uma de 2016 outra de 2017, e foi criado um índice de diferença. Este índice é a relação entre a mediana de 2017 e a mediana de 2016 para cada semana existente.
+
+```{r, include=FALSE}
+go.2 = commits %>% filter(file_extension == "go") %>% 
+  group_by(file_extension, the_year, week) %>% 
+  summarize(median=median(users))
+
+go.2016 = go.2 %>% filter(the_year == "2016")
+go.2017 = go.2 %>% filter(the_year == "2017")
+
+go.2 = merge(go.2016, go.2017, by="week") %>% 
+  group_by(week) %>% 
+  summarize(diff=median.y/median.x)
+```
+
+Com estes dados foi feita a reamostragem das diferenças e o resultado obtido pode ser visto no gráfico abaixo.
+
+```{r go}
+set.seed(1)
+go.diffs = bootstrap(go.2, median(diff), R = 5000) %>% 
+  CI.percentile(probs = c(.025, .975))
+
+data.frame(go.diffs) %>% 
+  ggplot(
+  aes(x = c("Go"), 
+        ymin = X2.5., ymax = X97.5.)) +
+  geom_errorbar(width = .2) +
+  labs(title="Diferença de mediana de usuários semanais de Go entre 2017/2016", x="")
+```
+
+Analisando o gráfico tem-se que não existe uma grande variação entre as medianas dos anos. Os valores estão em torno de 0.9 e 1.1 o que significa que existem casos em que uma semana de 2017 teve maior quantidade mediana de usuários e casos em que uma semana de 2016 teve maior quantidade mediana de usuários.
+
+##### 2.1 Quando se trata de uma linguagem mais obsoleta, como XML, a variação de uso é mais significante? 
+
+Na análise acima se viu que não existe diferença significativa no número de usuários commitando em Go entre 2016 e 2017. No caso de uma linguagem mais antiga, que está caindo em desuso isso pode não se repetir. Para responder essa pergunta vai-se repetir a reamostragem utilizada para a linguagem XML. 
+
+```{r, include=FALSE}
+xml = commits %>% filter(file_extension == "xml") %>% 
+  group_by(file_extension, the_year, week) %>% 
+  summarize(median=median(users))
+
+xml.2016 = xml %>% filter(the_year == "2016")
+xml.2017 = xml %>% filter(the_year == "2017")
+
+xml = merge(xml.2016, xml.2017, by="week") %>% 
+  group_by(week) %>% 
+  summarize(diff=median.y/median.x)
+```
+
+```{r xml}
+set.seed(1)
+xml.diffs = bootstrap(xml, median(diff), R = 5000) %>% 
+  CI.percentile(probs = c(.025, .975))
+
+data.frame(xml.diffs) %>% 
+  ggplot(
+  aes(x = c("XML"), 
+        ymin = X2.5., ymax = X97.5.)) +
+  geom_errorbar(width = .2) +
+  labs(title="Diferença de mediana de usuários semanais de XML entre 2017/2016", x="")
+```
+
+Aparentemente, o uso de XML vem diminuindo também no github. O intervalo de confiança mostra que os valores da relação entre mediana de commits em 2017 e mediana de commits em 2016 é sempre menor que 1, ou seja, a mediana de 2016 é maior que a mediana de 2017.
