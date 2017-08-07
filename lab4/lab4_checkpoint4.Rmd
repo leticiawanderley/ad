@@ -1,0 +1,101 @@
+---
+title: "Lab 4 Checkpoint 4"
+author: "Leticia Wanderley"
+date: "8/6/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+library(resample)
+theme_set(theme_bw())
+```
+
+## Lab 4 Checkpoint 4
+
+```{r read}
+commits <- read_csv("github-users-committing-filetypes.csv") 
+go <- commits %>% 
+  filter(file_extension=="go") %>% 
+  mutate(date=as.Date(paste(the_year, the_month, month_day, sep="-")),
+         week=week(date))
+```
+```{r goMean}
+go.mean.years = go %>% 
+  group_by(the_year) %>% 
+  summarise(mean=mean(users))
+go.mean.years
+
+diff.go.mean.years = diff(go.mean.years$mean)
+diff.go.mean.years
+```
+```{r goPValue}
+set.seed(1)
+diffs = replicate(10000, {
+  means = go %>% 
+    mutate(id_embaralhado = sample(the_year)) %>% 
+    group_by(id_embaralhado) %>% 
+    summarise(mean = mean(users))
+  dezesseis = means %>% 
+    filter(id_embaralhado == 2016)
+  dezessete = means %>% 
+    filter(id_embaralhado == 2017)
+  return(dezesseis$mean - dezessete$mean)
+})
+
+glimpse(diffs)
+tibble(diff = diffs) %>% 
+  ggplot(aes(x = diff)) + 
+  geom_histogram(bins = 30) + 
+  geom_vline(xintercept = diff.go.mean.years)
+
+# p-valor!
+sum(abs(diffs) >= abs(diff.go.mean.years)) / length(diffs)
+```
+
+### Mesma coisa para XML
+
+```{r xml}
+xml <- commits %>% 
+  filter(file_extension== "xml") %>% 
+  mutate(date=as.Date(paste(the_year, the_month, month_day, sep="-")),
+         week=week(date))
+```
+
+
+```{r xmlMean}
+xml.mean.years = xml %>% 
+  group_by(the_year) %>% 
+  summarise(mean=mean(users))
+xml.mean.years
+
+diff.xml.mean.years = diff(xml.mean.years$mean)
+diff.xml.mean.years
+```
+
+
+```{r xmlPValue}
+set.seed(1)
+diffs = replicate(10000, {
+  means = xml %>% 
+    mutate(id_embaralhado = sample(the_year)) %>% 
+    group_by(id_embaralhado) %>% 
+    summarise(mean = mean(users))
+  dezesseis = means %>% 
+    filter(id_embaralhado == 2016)
+  dezessete = means %>% 
+    filter(id_embaralhado == 2017)
+  return(dezesseis$mean - dezessete$mean)
+})
+
+glimpse(diffs)
+tibble(diff = diffs) %>% 
+  ggplot(aes(x = diff)) + 
+  geom_histogram(bins = 30) + 
+  geom_vline(xintercept = diff.xml.mean.years)
+
+# p-valor!
+sum(abs(diffs) >= abs(diff.xml.mean.years)) / length(diffs)
+```
