@@ -8,94 +8,132 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(lubridate)
-library(resample)
 theme_set(theme_bw())
 ```
 
-## Lab 4 Checkpoint 4
+## Lab 4 Checkpoint 4 
+### p-valor
 
-```{r read}
+O p-valor é a probabilidade de encontrar resultados iguais ou maiores que os do experimento quando a hipótese nula é verdadeira. Ou seja, em uma situação na qual os parâmetros do experimento (hipótese alternativa) não são levados em conta encontrar um resultado similarao da hipótese alternativa. 
+Trazendo para o caso particular desta análise é encontrar diferenças da utilização de linguagens entre 2016 e 2017 similares no conjunto de dados original (com cada leitura de usuários correspondendo a uma data) e em conjunto de dados embaralhado. Os dados embaralhados representam a probabilidade das diferenças encontradas nos dados originais serem inerentes às distribuição do conjunto e não resultantes da variação de uso em diferentes anos.
+```{r, include=FALSE}
 commits <- read_csv("github-users-committing-filetypes.csv") 
-go <- commits %>% 
-  filter(file_extension=="go") %>% 
-  mutate(date=as.Date(paste(the_year, the_month, month_day, sep="-")),
-         week=week(date))
 ```
+
+[Análise feita utilizando ICs](https://leticiawanderley.github.io/ad/lab4/lab4_checkpoint3.html)
+
+#### A diferença média de usuários de Go entre 2016 e 2017 é significativa? A quantidade de usuários aumentou?
+
+Para responder essa pergunta o conjunto de dados será filtrado para conter apenas dados referentes a linguagem Go. 
+```{r go}
+go <- commits %>% 
+  filter(file_extension=="go")
+```
+
+A média de usuários commitando em 2016 e 2017 pode ser vista na tabela abaixo.
 ```{r goMean}
 go.mean.years = go %>% 
   group_by(the_year) %>% 
   summarise(mean=mean(users))
 go.mean.years
+```
 
+E a diferença entre as médias é de aproximadamente 3.39 usuários.
+```{r goMeanDiff}
 diff.go.mean.years = diff(go.mean.years$mean)
 diff.go.mean.years
 ```
-```{r goPValue}
+
+Para estimar o p-valor se vai fazer uma reamostragem das quantidades de usuários embaralhando os anos aos quais as quantidades fazem referência. Isso cria um ambiente no qual a distribuição dos valores é mantida sem levar em conta a hipótese alternativa, de que a diferença entre os anos é significativa.
+```{r goResample}
 set.seed(1)
-diffs = replicate(10000, {
+diffs.go = replicate(10000, {
   means = go %>% 
-    mutate(id_embaralhado = sample(the_year)) %>% 
-    group_by(id_embaralhado) %>% 
+    mutate(id_shuffled = sample(the_year)) %>% 
+    group_by(id_shuffled) %>% 
     summarise(mean = mean(users))
   dezesseis = means %>% 
-    filter(id_embaralhado == 2016)
+    filter(id_shuffled == 2016)
   dezessete = means %>% 
-    filter(id_embaralhado == 2017)
+    filter(id_shuffled == 2017)
   return(dezesseis$mean - dezessete$mean)
 })
 
-glimpse(diffs)
-tibble(diff = diffs) %>% 
+tibble(diff = diffs.go) %>% 
   ggplot(aes(x = diff)) + 
   geom_histogram(bins = 30) + 
-  geom_vline(xintercept = diff.go.mean.years)
-
-# p-valor!
-sum(abs(diffs) >= abs(diff.go.mean.years)) / length(diffs)
+  geom_vline(xintercept = diff.go.mean.years) +
+  labs(title="Distribuição das diferenças de usuários de Go entre 2016 e 2017\nReamostragem embaralhada",
+       x="Diferença", y="")
 ```
 
-### Mesma coisa para XML
+No gráfico acima se vê a distribuição das diferenças das médias encontradas na reamostragem aleatória embaralhada. A linha vertical representa a diferença média dos dados originais. Se pode observar que a linha está quase no centro da distribuição, um indicativo de que a hipótese nula é verdadeira e que a diferença de usuários de Go entre 2016 e 2017 não é significativa. A probabilidade de se encontrar um valor igual ou maior que o encontrado nos dados originais é alta.
 
+O p-valor encontrado é 0.8654, o que significa que em aproximadamente 86% dos casos da reamostragem o valor absoluto da diferença foi maior ou igual ao valor encontrado nos dados originais. Com esse resultado não é possível rejeitar a hipótese nula, não se confirma que a diferença entre os usuários de Go entre 2016 e 2017 encontrada no dados originais é significativa. 
+```{r goPValue}
+sum(abs(diffs.go) >= abs(diff.go.mean.years)) / length(diffs.go)
+```
+
+### Repetindo a mesma análise com para a linguagem XML
+
+XML é uma linguagem mais obsoleta, será que a quantidade de usuários diminuiu entre 2016 e 2017, a diferença é significativa?
+
+Filtrando o conjunto de dados para conter apenas dados referentes a XML.
 ```{r xml}
 xml <- commits %>% 
-  filter(file_extension== "xml") %>% 
-  mutate(date=as.Date(paste(the_year, the_month, month_day, sep="-")),
-         week=week(date))
+  filter(file_extension== "xml")
 ```
 
-
+As médias de usuários em 2016 e 2017 pode ser observada na tabela abaixo.
 ```{r xmlMean}
 xml.mean.years = xml %>% 
   group_by(the_year) %>% 
   summarise(mean=mean(users))
 xml.mean.years
+```
 
+A diferença entre as médias dos dois anos é aproximadamente de 242 usuários.
+```{r xmlMeanDiff}
 diff.xml.mean.years = diff(xml.mean.years$mean)
 diff.xml.mean.years
 ```
 
-
-```{r xmlPValue}
+Realizando a reamostragem embaralhada se certifica que o conjunto de dados resultante equivale a hipótese nula. O gráfico mostra a distribuição das diferenças de usuários entre os anos, dos dados embaralhados. A linha vertical representa a diferença encontrada no conjunto de dados original.  
+```{r xmlResample}
 set.seed(1)
-diffs = replicate(10000, {
+diffs.xml = replicate(10000, {
   means = xml %>% 
-    mutate(id_embaralhado = sample(the_year)) %>% 
-    group_by(id_embaralhado) %>% 
+    mutate(id_shuffled = sample(the_year)) %>% 
+    group_by(id_shuffled) %>% 
     summarise(mean = mean(users))
   dezesseis = means %>% 
-    filter(id_embaralhado == 2016)
+    filter(id_shuffled == 2016)
   dezessete = means %>% 
-    filter(id_embaralhado == 2017)
+    filter(id_shuffled == 2017)
   return(dezesseis$mean - dezessete$mean)
 })
 
-glimpse(diffs)
-tibble(diff = diffs) %>% 
+tibble(diff = diffs.xml) %>% 
   ggplot(aes(x = diff)) + 
   geom_histogram(bins = 30) + 
-  geom_vline(xintercept = diff.xml.mean.years)
-
-# p-valor!
-sum(abs(diffs) >= abs(diff.xml.mean.years)) / length(diffs)
+  geom_vline(xintercept = diff.xml.mean.years) +
+  labs(title="Distribuição das diferenças de usuários de XML entre 2016 e 2017\nReamostragem embaralhada",
+       x="Diferença", y="")
 ```
+
+Como se pode ver no gráfico a diferença encontrada nos dados originais está muito distante da distribuição dos dados embaralhados o que corrobora com a hipótese alternativa e permite rejeitar a hipótese nula.
+
+O p-valor encontrado é de 0.0001. Isso quer dizer que em apenas 0.01% dos casos o valor absoluto de diferença encontrado nos dados embaralhados foi maior ou igual ao valor encontrado nos dados originais.
+```{r xmlPValue}
+sum(abs(diffs.xml) >= abs(diff.xml.mean.years)) / length(diffs.xml)
+```
+
+### Comparando ICs x Teste de hipótese
+
+> Os resultados das análises utilizando intervalos de confiança e testes de hipótese concordam. 
+
+Ao analisar o conjunto de dados referentes a __Go__ o intervalo de confiança das diferenças entre 2016 e 2017 foi inconclusivo, é composto por valores maiores que 1 e menores que 1, e inclui o valor 0. Esses resultados são indicativos de que não existe diferença significativa entre o número de usuários nos anos analisados. Utilizando testes de hipótese foi possível perceber que a diferença média entre os anos no conjunto de dados não é significativa, valores maiores ou iguais a essa diferença foram encontrados em mais de 80% dos dados embaralhados. O valor de diferença encontrado é comum no cojunto de dados e não tem significância.
+
+> Com o uso de intervalos de confiança é possível estimar, até certo ponto, o valor da diferença entre os anos. Com testes de hipóteses se pode inferir sobre a significância dos resultados obtidos em uma análise.
+
+Analisando o conjunto de dados referentes a __XML__ o intervalo de confiança resultante da reamostragem das diferenças de quantidade de usuários ativos em entre 2016 e 2017 estava contido, completamente, dentro do conjunto dos reais menores que 1. Isso significa que a quantidade de usuários em 2017 foi sempre menor que a quantidade de usuários em 2016. O resultado do teste de hipótese corrobora com o intervalo de confiança. A diferença média entre os anos foi de -242 aproximadamente, e a probabilidade de, dentro do conjunto de dados embaralhados, encontrar valores absolutos maiores ou iguais a essa valor foi de 0.01%. O que reafirma a significância do valor encontrado, a diferença entre os anos é significativa.
