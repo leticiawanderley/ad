@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(broom)
 theme_set(theme_bw())
 ```
 
@@ -18,4 +19,12 @@ ggplot(dates, aes(x = sinc, y = prob)) +
 
 ggplot(dates, aes(x = sinc, y = prob)) + 
   geom_jitter(alpha = 0.4, width = 0.2) + geom_smooth(method = "lm", se = FALSE)
+
+mod <- lm(prob ~ sinc, data = dates)
+
+summary(mod)
+confint(mod)
+
+tidy(mod, conf.int = TRUE)
+glance(mod) 
 ```
