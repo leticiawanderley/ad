@@ -1,0 +1,21 @@
+---
+title: "Lab5 Checkpoint1"
+author: "Leticia Wanderley"
+date: "15 de agosto de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+theme_set(theme_bw())
+```
+
+```{r}
+dates <- read_csv("speed-dating.csv")
+ggplot(dates, aes(x = sinc, y = prob)) + 
+  geom_jitter(alpha = 0.4, width = 0.2)
+
+ggplot(dates, aes(x = sinc, y = prob)) + 
+  geom_jitter(alpha = 0.4, width = 0.2) + geom_smooth(method = "lm", se = FALSE)
+```
