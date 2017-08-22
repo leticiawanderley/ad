@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(broom)
+library(modelr)
 theme_set(theme_bw())
 ```
 
@@ -26,15 +27,17 @@ dates$attr3_s = as.numeric(as.character(dates$attr3_s))
 #### O compartilhamento de hobbies influencia no "gostar"?
 
 ```{r}
-ggplot(dates, aes(x = shar, y = like)) + 
+ggplot(dates, aes(x = sinc, y = like)) + 
   geom_jitter(alpha = 0.4, width = 0.2) + geom_smooth(method = "lm", se = FALSE)
 ```
 
 ```{r}
-mod <- lm(like ~ shar, data = dates)
+mod <- lm(like ~ shar + attr + fun + sinc, data = dates)
 
 confint(mod)
-
+# shar and attr explain 60% of data
+# shar + attr + fun + sinc, explain 66%
+# shar, attr, fun, sinc, intel, amb also explain 66%
 tidy(mod, conf.int = TRUE)
 glance(mod) 
 ```
