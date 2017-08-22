@@ -12,15 +12,40 @@ library(broom)
 theme_set(theme_bw())
 ```
 
+#Lab 5 - Checkpoint 1
+
+### Dados
 ```{r}
 dates <- read_csv("speed-dating.csv")
-ggplot(dates, aes(x = sinc, y = prob)) + 
-  geom_jitter(alpha = 0.4, width = 0.2)
+dates <- na.omit(dates)
+dates$attr3_s = as.numeric(as.character(dates$attr3_s))
+```
 
-ggplot(dates, aes(x = sinc, y = prob)) + 
+### Perguntas
+
+#### O compartilhamento de hobbies influencia no "gostar"?
+
+```{r}
+ggplot(dates, aes(x = shar, y = like)) + 
   geom_jitter(alpha = 0.4, width = 0.2) + geom_smooth(method = "lm", se = FALSE)
+```
 
-mod <- lm(prob ~ sinc, data = dates)
+```{r}
+mod <- lm(like ~ shar, data = dates)
+
+confint(mod)
+
+tidy(mod, conf.int = TRUE)
+glance(mod) 
+```
+
+#### O quanto uma pessoa se acha atraente influencia no quanto ela acha outra pessoa atraente?
+
+```{r}
+ggplot(dates, aes(x = attr3_s, y = attr)) + 
+  geom_jitter(alpha = 0.4, width = 0.2) + geom_smooth(method = "lm")
+
+mod <- lm(attr ~ attr3_s, data = dates)
 
 summary(mod)
 confint(mod)
