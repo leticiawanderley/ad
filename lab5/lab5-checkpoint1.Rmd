@@ -20,39 +20,45 @@ theme_set(theme_bw())
 dates <- read_csv("speed-dating.csv")
 dates <- na.omit(dates)
 dates$attr3_s = as.numeric(as.character(dates$attr3_s))
+dates$sinc3_s = as.numeric(as.character(dates$sinc3_s))
+dates$intel3_s = as.numeric(as.character(dates$intel3_s))
+dates$fun3_s = as.numeric(as.character(dates$fun3_s))
+dates$amb3_s = as.numeric(as.character(dates$amb3_s))
 ```
 
 ### Perguntas
 
-#### O compartilhamento de hobbies influencia no "gostar"?
+#### Quais os atributos que influenciam mais no "gostar"?
 
 ```{r}
 ggplot(dates, aes(x = sinc, y = like)) + 
   geom_jitter(alpha = 0.4, width = 0.2) + geom_smooth(method = "lm", se = FALSE)
+
 ```
 
 ```{r}
-mod <- lm(like ~ shar + attr + fun + sinc, data = dates)
+mod <- lm(like ~ shar + attr * fun + sinc, data = dates)
 
 confint(mod)
 # shar and attr explain 60% of data
 # shar + attr + fun + sinc, explain 66%
 # shar, attr, fun, sinc, intel, amb also explain 66%
 tidy(mod, conf.int = TRUE)
-glance(mod) 
+glance(mod)
+
+para_plotar_modelo = dates %>% 
+  data_grid(shar = seq_range(shar, 3), # Crie um vetor de 10 valores no range de TV2
+            attr = seq_range(attr, 3), # Vetor de 4 valores no range de Radio 
+            fun = seq_range(fun, 3),
+            sinc = seq_range(sinc, 3)) %>% 
+  add_predictions(mod)
+
+para_plotar_modelo %>% 
+  ggplot(aes(x = shar, y = pred)) + 
+  geom_line(aes(group = attr, colour = attr)) + 
+  facet_grid(sinc ~ fun)
 ```
 
-#### O quanto uma pessoa se acha atraente influencia no quanto ela acha outra pessoa atraente?
 
-```{r}
-ggplot(dates, aes(x = attr3_s, y = attr)) + 
-  geom_jitter(alpha = 0.4, width = 0.2) + geom_smooth(method = "lm")
 
-mod <- lm(attr ~ attr3_s, data = dates)
 
-summary(mod)
-confint(mod)
-
-tidy(mod, conf.int = TRUE)
-glance(mod) 
-```
