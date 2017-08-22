@@ -37,7 +37,7 @@ ggplot(dates, aes(x = sinc, y = like)) +
 ```
 
 ```{r}
-mod <- lm(like ~ shar + attr * fun + sinc, data = dates)
+mod <- lm(like ~ shar + attr + fun + sinc, data = dates)
 
 confint(mod)
 # shar and attr explain 60% of data
