@@ -98,16 +98,26 @@ No gráfico acima, a distribuição horizontal representa o valor do quão diver
 
 ### O quanto o entrevistado se acha atrante influencia no quanto ele acha a outra pessoa atraente?
 
+Os entrevistados também poderiam optar por responder algumas perguntas sobre si mesmo. As perguntas eram parecidas com as perguntas feitas sobre atributos da pessoa encontrada.
+
 ```{r}
 ggplot(dates, aes(x = attr3_s, y = attr)) + 
-  geom_jitter(alpha = 0.4, width = 0.2) + geom_smooth(method = "lm")
+  geom_jitter(alpha = 0.4, width = 0.2) + geom_smooth(method = "lm") +
+  labs(title="O quão o entrevistado se acha atraente X o quão acha o outro atraente",
+       x="Atração própria", y="Atração do outro")
 ```
+
+No gráfico acima se tem uma primeira impressão de que uma variável não explica muito, quiça alguma coisa, sobre a outra.
 
 ```{r}
 mod <- lm(attr ~ attr3_s, data = dates)
-
-confint(mod)
-
 tidy(mod, conf.int = TRUE)
+```
+
+Apesar de ter alguma significância, a "atração própria" não influencia muito no valor atribuído a atração do outro. A cada ponto a mais de atração própria a atração do outro aumenta em 0.08 ponto.
+
+```{r}
 glance(mod) 
 ```
+
+Como já observado, a variável independente, a atração própria atribuída, não explica muito da variável dependente do modelo, a atração do outro. Nesse caso, de acordo com o R quadrado ajustado, explica somente cerca de 0.4%. 
