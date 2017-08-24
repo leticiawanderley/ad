@@ -21,11 +21,7 @@ Os dados foram obtidos dos participantes desses encontros. Cada participante foi
 ```{r dados, include=FALSE}
 dates <- read_csv("speed-dating.csv")
 dates <- na.omit(dates)
-# dates$attr3_s = as.numeric(as.character(dates$attr3_s))
-# dates$sinc3_s = as.numeric(as.character(dates$sinc3_s))
-# dates$intel3_s = as.numeric(as.character(dates$intel3_s))
-# dates$fun3_s = as.numeric(as.character(dates$fun3_s))
-# dates$amb3_s = as.numeric(as.character(dates$amb3_s))
+dates$attr3_s = as.numeric(as.character(dates$attr3_s))
 ```
 
 ## Perguntas
@@ -102,3 +98,16 @@ No gráfico acima, a distribuição horizontal representa o valor do quão diver
 
 ### O quanto o entrevistado se acha atrante influencia no quanto ele acha a outra pessoa atraente?
 
+```{r}
+ggplot(dates, aes(x = attr3_s, y = attr)) + 
+  geom_jitter(alpha = 0.4, width = 0.2) + geom_smooth(method = "lm")
+```
+
+```{r}
+mod <- lm(attr ~ attr3_s, data = dates)
+
+confint(mod)
+
+tidy(mod, conf.int = TRUE)
+glance(mod) 
+```
