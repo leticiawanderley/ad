@@ -32,20 +32,21 @@ Além de descrever suas impressões sobre as outras pessoas, os participantes ta
 
 #### Interesses em comum e atração
 
-Após uma análise exploratória inicial se percebeu que, como esperado, se duas pessoas tem muitos interesses em comum eles provavelmente gostam mais uma da outra. Outro fator muito influente é o nível de atração que uma pessoa exerce sobre a outra. Ou seja, [_beleza é fundamental_](http://www.viniciusdemoraes.com.br/pt-br/poesia/poesias-avulsas/receita-de-mulher).
+Após uma análise exploratória inicial se percebeu que, como esperado, se duas pessoas tem muitos interesses em comum elas provavelmente gostam mais uma da outra. Outro fator muito influente é o nível de atração que uma pessoa exerce sobre a outra. Ou seja, [_beleza é fundamental_](http://www.viniciusdemoraes.com.br/pt-br/poesia/poesias-avulsas/receita-de-mulher).
 
 ```{r}
+set.seed(1)
 mod_shar_attr <- lm(like ~ shar + attr, data = dates)
 tidy(mod_shar_attr, conf.int = TRUE)
 ```
 
-O resultado da regressão linear utilizando tanto o valor de interesses em comum e atração mostra que os dois atributos tem significância no "gostar". Um ponto no quesito "interesses em comum" aumenta 0.37 no valor do "gostar" e um ponto no quesito "atração" aumenta 0.44. No modelo encontrado, o valor do "gostar" quando os valores dos dois atributos é zero é de 1.36 pontos.
+O resultado da regressão linear utilizando tanto o valor de interesses em comum e atração mostra que os dois atributos tem significância no "gostar". Um ponto no quesito "interesses em comum" aumenta 0.36 no valor do "gostar" e um ponto no quesito "atração" aumenta 0.47. No modelo encontrado, o valor do "gostar" quando os valores dos dois atributos é zero é de 1.21 pontos.
 
 ```{r}
 glance(mod_shar_attr)
 ```
 
-Ao se observa o valor do R quadrado ajustado, se percebe que os atributos interesses em comum e atração explicam 59% do valor do "gostar".
+Ao se observar o valor do R quadrado ajustado, se percebe que os atributos interesses em comum e atração explicam 60% do valor do "gostar".
 
 ```{r}
 modelo_shar_attr = dates %>% 
@@ -67,17 +68,18 @@ No gráfico acima se pode observar que, como já visto, quanto maior o valor da 
 Os atributos mais influentes e significativos no "gostar" são 4. Interesses em comum e atração, como já visto, seguidos por o quão a pessoa parece ser divertida e o quão ela parece ser sincera.
 
 ```{r}
+set.seed(1)
 mod_most <- lm(like ~ shar + attr + fun + sinc, data = dates)
 tidy(mod_most, conf.int = TRUE)
 ```
 
-Os quatro atributos aumentam entre 0.32 e 0.15 no valor atribuído ao "gostar". Isso quer dizer que a cada ponto a mais no valor desses quesitos o valor do gostar aumenta entre 0.32 e 0.15, dependendo do quesito. O valor do "gostar" quando todos os valores dos atributos são nulos é 0.26.
+Os quatro atributos aumentam entre 0.34 e 0.15 no valor atribuído ao "gostar". Isso quer dizer que a cada ponto a mais no valor desses quesitos o valor do gostar aumenta entre 0.34 e 0.15, dependendo do quesito. O valor do "gostar" quando todos os valores dos atributos são nulos é 0.29.
 
 ```{r}
 glance(mod_most)
 ```
 
-O modelo gerado por esses 4 atributos explica 65% do valor do "gostar", como se pode observar pelo R quadrado ajustado. (A adição dos outros dois atributos restantes, inteligência e ambição, aumenta em torno de 0.2% o valor do R quadrado ajustado.)
+O modelo gerado por esses 4 atributos explica 66% do valor do "gostar", como se pode observar pelo R quadrado ajustado. (A adição dos outros dois atributos restantes, inteligência e ambição, aumenta em torno de 0.3% o valor do R quadrado ajustado.)
 
 ```{r}
 modelo_most = dates %>% 
@@ -94,11 +96,11 @@ modelo_most %>%
   labs(title="Os atributos que mais influenciam no gostar", x="Interesses em comum", y="Predição do gostar", colour="Atração")
 ```
 
-No gráfico acima, a distribuição horizontal representa o valor do quão divertida a pessoa pareceu ser e a distribuição vertical representa o quão sincera a pessoa pareceu ser. Como no gráfico anterior, se pode notar a diferença no valor inicial de cada reta de acordo com a variação dos atributos que a definem. Por exemplo, a variação do começo das retas na linha de cima é um pouco maior que a variação na primeira coluna a esquerda. Isso representa como, de acordo com o modelo, o quão divertida a pessoa pareceu ser tem peso maior que o quão sincera a pessoa pareceu ser.
+No gráfico acima, a distribuição horizontal representa o valor do quão divertida a pessoa pareceu ser e a distribuição vertical representa o quão sincera a pessoa pareceu ser. Como no gráfico anterior, se pode notar a diferença no valor inicial de cada reta de acordo com a variação dos atributos que a definem. Por exemplo, a variação do ponto inical das retas na linha de cima é um pouco maior que a variação na primeira coluna a esquerda. Isso representa como, de acordo com o modelo, o quão divertida a pessoa pareceu ser tem peso maior que o quão sincera a pessoa pareceu ser.
 
 ### O quanto o entrevistado se acha atrante influencia no quanto ele acha a outra pessoa atraente?
 
-Os entrevistados também poderiam optar por responder algumas perguntas sobre si mesmo. As perguntas eram parecidas com as perguntas feitas sobre atributos da pessoa encontrada.
+Os entrevistados também poderiam optar por responder algumas perguntas sobre si mesmos. As perguntas eram parecidas com as perguntas feitas sobre atributos da pessoa encontrada.
 
 ```{r}
 ggplot(dates, aes(x = attr3_s, y = attr)) + 
@@ -110,6 +112,7 @@ ggplot(dates, aes(x = attr3_s, y = attr)) +
 No gráfico acima se tem uma primeira impressão de que uma variável não explica muito, quiça alguma coisa, sobre a outra.
 
 ```{r}
+set.seed(1)
 mod <- lm(attr ~ attr3_s, data = dates)
 tidy(mod, conf.int = TRUE)
 ```
