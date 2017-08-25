@@ -26,7 +26,7 @@ dates <- dates %>%
 bm <- glm(dec ~ like, 
           data = dates, 
           family = "binomial")
-tidy(bm, conf.int = TRUE)
+tidy(bm, conf.int = TRUE, exponentiate = TRUE)
 pR2(bm)
 ```
 
