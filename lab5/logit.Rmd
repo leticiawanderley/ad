@@ -27,11 +27,10 @@ bm <- glm(dec ~ like,
           data = dates, 
           family = "binomial")
 tidy(bm, conf.int = TRUE)
-glance(bm)
 pR2(bm)
 ```
 
-```{r}
+```{r, warning=FALSE}
 bm %>% 
   augment(type.predict = "response")  %>% 
   mutate(matchNum = ifelse(dec == 1, 1, 0)) %>% 
