@@ -1,0 +1,41 @@
+---
+title: "logit"
+author: "Leticia Wanderley"
+date: "25 de agosto de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(broom)
+library(modelr)
+library(pscl)
+theme_set(theme_bw())
+```
+
+```{r dados, include=FALSE}
+dates <- read_csv("speed-dating2.csv")
+dates <- dates %>% 
+  na.omit() %>%
+  mutate(dec = case_when(.$dec == "no" ~ 0, 
+                         .$dec == "yes" ~ 1))
+```
+
+```{r}
+bm <- glm(dec ~ like, 
+          data = dates, 
+          family = "binomial")
+tidy(bm, conf.int = TRUE)
+glance(bm)
+pR2(bm)
+```
+
+```{r}
+bm %>% 
+  augment(type.predict = "response")  %>% 
+  mutate(matchNum = ifelse(dec == 1, 1, 0)) %>% 
+  ggplot(aes(x = like)) + 
+  geom_count(aes(y = matchNum), alpha = 0.5) + 
+  geom_line(aes(y = .fitted))
+```
