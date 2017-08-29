@@ -14,6 +14,12 @@ library(pscl)
 theme_set(theme_bw())
 ```
 
+## Dados
+
+Para esta análise serão utilizados dados de "speed dating". Speed dating é uma forma de conhecer muitas pessoas novas rapidamente. Nessa "modalidade" de encontros, várias pessoas se reúnem em um lugar público, como um restaurante, e passam alguns poucos minutos conversando em duplas. Depois que esses minutos se passam as duplas são trocadas e o cronômetro é resetado. 
+Os dados foram obtidos dos participantes desses encontros. Cada participante foi convidado a responder um formulário após cada encontro descrevendo suas impressões sobre a pessoa encontrada. As impressões variam de características físicas, como atratividade (ou nível de atração), para características psicológicas, como sinceridade.
+Depois do encontro os participantes também atribuiam um veredicto, respondiam se eles queriam ou não encontrar aquela pessoa novamente. É esse veredicto que os modelos de regressão logística vão tentar prever.
+
 ```{r dados, include=FALSE}
 dates <- read_csv("speed-dating2.csv")
 dates <- dates %>% 
@@ -22,13 +28,9 @@ dates <- dates %>%
                          .$dec == "yes" ~ 1))
 ```
 
-## Dados
-
-Para esta análise serão utilizados dados de "speed dating". Speed dating é uma forma de conhecer muitas pessoas novas rapidamente. Nessa "modalidade" de encontros, várias pessoas se reúnem em um lugar público, como um restaurante, e passam alguns poucos minutos conversando em duplas. Depois que esses minutos se passam as duplas são trocadas e o cronômetro é resetado. 
-Os dados foram obtidos dos participantes desses encontros. Cada participante foi convidado a responder um formulário após cada encontro descrevendo suas impressões sobre a pessoa encontrada. As impressões variam de características físicas, como atratividade (ou nível de atração), para características psicológicas, como sinceridade.
-Depois do encontro os participantes também atribuiam um veredicto, respondiam se eles queriam ou não encontrar aquela pessoa novamente. É esse veredicto que as análises vão tentar prever.
-
 ## 1. Quais fatores têm efeito significativo na chance de p1 decidir se encontrar novamente com p2? 
+
+Para responder essa pergunta foram selecionadas 6 variáveis que representam os notas dadas por uma pessoa à pessoa que ela encontrou. Essas variáveis são: interesses em comum, o quão atrante, o quão divertida, o quão inteligente, o quão sincera e o quão ambiciosa a pessoa acha a outra.
 
 ```{r}
 bm.1 <- glm(dec ~ shar + attr + fun + intel + sinc + amb, 
