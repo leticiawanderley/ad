@@ -12,11 +12,7 @@ library(broom)
 library(modelr)
 library(pscl)
 theme_set(theme_bw())
-```
 
-## 1. Quais fatores têm efeito significativo na chance de p1 decidir se encontrar novamente com p2? 
-
-```{r dados, include=FALSE}
 dates <- read_csv("speed-dating2.csv")
 dates <- dates %>% 
   na.omit() %>%
@@ -24,21 +20,21 @@ dates <- dates %>%
                          .$dec == "yes" ~ 1))
 ```
 
+## 1. Quais fatores têm efeito significativo na chance de p1 decidir se encontrar novamente com p2? 
+
 ```{r}
-bm <- glm(dec ~ like, 
+bm <- glm(dec ~ shar + attr + fun + intel + sinc + amb, 
           data = dates, 
           family = "binomial")
 tidy(bm, conf.int = TRUE, exponentiate = TRUE)
-pR2(bm)
 ```
 
-```{r, warning=FALSE}
-bm %>% 
-  augment(type.predict = "response")  %>% 
-  mutate(matchNum = ifelse(dec == 1, 1, 0)) %>% 
-  ggplot(aes(x = like)) + 
-  geom_count(aes(y = matchNum), alpha = 0.5) + 
-  geom_line(aes(y = .fitted))
+```{r}
+tidy(bm, conf.int = TRUE, exponentiate = FALSE)
+```
+
+```{r}
+pR2(bm)
 ```
 
 ## 2. Que fatores nos dados têm mais efeito na chance de um participante querer se encontrar novamente com outro?
