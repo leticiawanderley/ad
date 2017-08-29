@@ -23,18 +23,43 @@ dates <- dates %>%
 ## 1. Quais fatores têm efeito significativo na chance de p1 decidir se encontrar novamente com p2? 
 
 ```{r}
-bm <- glm(dec ~ shar + attr + fun + intel + sinc + amb, 
+bm.1 <- glm(dec ~ shar + attr + fun + intel + sinc + amb, 
           data = dates, 
           family = "binomial")
-tidy(bm, conf.int = TRUE, exponentiate = TRUE)
+tidy(bm.1, conf.int = TRUE, exponentiate = TRUE)
 ```
 
 ```{r}
-tidy(bm, conf.int = TRUE, exponentiate = FALSE)
+tidy(bm.1, conf.int = TRUE, exponentiate = FALSE)
 ```
 
 ```{r}
-pR2(bm)
+pR2(bm.1)
 ```
+
+Efeito positivo: interesses em comum, atratividade, o quão divertido
+Efeito negativo: o quão ambicioso
 
 ## 2. Que fatores nos dados têm mais efeito na chance de um participante querer se encontrar novamente com outro?
+```{r}
+bm.2<- glm(dec ~ shar + attr + fun + amb, 
+          data = dates, 
+          family = "binomial")
+tidy(bm.2, conf.int = TRUE, exponentiate = TRUE)
+pR2(bm.2)
+```
+
+```{r}
+model.2 = dates %>% 
+  data_grid(shar = seq_range(shar, 3), 
+            attr = seq_range(attr, 3),
+            fun = seq_range(fun, 3),
+            amb = seq_range(amb, 3))
+mm = augment(bm.2, 
+             newdata = model.2, 
+             type.predict = "response")
+mm %>% 
+  ggplot(aes(x = shar, colour=attr)) + 
+  geom_line(aes(y = .fitted)) + 
+  facet_grid(amb ~ fun)
+```
