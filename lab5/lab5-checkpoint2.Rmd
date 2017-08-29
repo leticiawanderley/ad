@@ -12,7 +12,9 @@ library(broom)
 library(modelr)
 library(pscl)
 theme_set(theme_bw())
+```
 
+```{r dados, include=FALSE}
 dates <- read_csv("speed-dating2.csv")
 dates <- dates %>% 
   na.omit() %>%
@@ -62,5 +64,6 @@ mm = augment(bm.2,
 mm %>% 
   ggplot(aes(x = shar, colour=attr)) + 
   geom_line(aes(y = .fitted)) +
-  facet_grid(amb ~ fun)
+  facet_grid(amb ~ fun) +
+  labs(title="Os atributos que mais influenciam no match", x="Interesses em comum", y="Predição do match", colour="Atração")
 ```
