@@ -14,11 +14,11 @@ library(pscl)
 theme_set(theme_bw())
 ```
 
-## Dados
+### Dados
 
-Para esta análise serão utilizados dados de "speed dating". Speed dating é uma forma de conhecer muitas pessoas novas rapidamente. Nessa "modalidade" de encontros, várias pessoas se reúnem em um lugar público, como um restaurante, e passam alguns poucos minutos conversando em duplas. Depois que esses minutos se passam as duplas são trocadas e o cronômetro é resetado. 
+Para esta análise serão utilizados dados de "speed dating". Speed dating é uma forma de conhecer pessoas novas rapidamente. Nessa "modalidade" de encontros, várias pessoas se reúnem em um lugar público, como um restaurante, e passam alguns poucos minutos conversando em duplas. Depois que esses minutos se passam as duplas são rearranjadas e o tempo é resetado. 
 Os dados foram obtidos dos participantes desses encontros. Cada participante foi convidado a responder um formulário após cada encontro descrevendo suas impressões sobre a pessoa encontrada. As impressões variam de características físicas, como atratividade (ou nível de atração), para características psicológicas, como sinceridade.
-Depois do encontro os participantes também atribuiam um veredicto, respondiam se eles queriam ou não encontrar aquela pessoa novamente. É esse veredicto que os modelos de regressão logística vão tentar prever.
+Depois do encontro os participantes também atribuiam um veredicto, respondiam se eles queriam ou não encontrar aquela pessoa novamente. É esse veredicto que os modelos de regressão logística tentarão prever.
 
 ```{r dados, include=FALSE}
 dates <- read_csv("speed-dating2.csv")
@@ -28,7 +28,7 @@ dates <- dates %>%
                          .$dec == "yes" ~ 1))
 ```
 
-## 1. Quais fatores têm efeito significativo na chance de p1 decidir se encontrar novamente com p2? 
+### 1. Quais fatores têm efeito significativo na chance de p1 decidir se encontrar novamente com p2? 
 
 Para responder essa pergunta foram selecionadas 6 variáveis que representam os notas dadas por uma pessoa à pessoa que ela encontrou. Essas variáveis são: interesses em comum, o quão atrante, o quão divertida, o quão inteligente, o quão sincera e o quão ambiciosa a pessoa acha a outra.
 
@@ -36,29 +36,44 @@ Para responder essa pergunta foram selecionadas 6 variáveis que representam os 
 bm.1 <- glm(dec ~ shar + attr + fun + intel + sinc + amb, 
           data = dates, 
           family = "binomial")
+tidy(bm.1, conf.int = TRUE, exponentiate = FALSE)
+```
+
+Observando cuidadosamente os valores de confiança estimados para cada valor se percebe que os intervalos de confiança do quão inteligente e o quão sincera a pessoa pareceu ser incluem o valor 0. Ambos os intervalos incluem números negativos e positivos, isto é um indicativo de que esses valores não são significativos, não se pode afirmar se eles contribuem positiva ou negativamente no match.
+
+```{r}
 tidy(bm.1, conf.int = TRUE, exponentiate = TRUE)
 ```
 
-```{r}
-tidy(bm.1, conf.int = TRUE, exponentiate = FALSE)
-```
+Ao observar os valores das estimativas exponeciados se tem o mesmo resultado. As variáveis o quão inteligente e o quão sincera a pessoa pareceu ser estão dentro de intervalos que incluem tanto valores maiores quanto menores que 1, um indicativo da não significância dessas estimativas. A partir das estimativas exponenciadas se pode ainda qualificar o efeito que uma variável tem no match. As variáveis interesses em comum, o quão atrante, o quão divertida uma pessoa acha a outra, têm efeito positivo no resultado do match. Já o quão ambiciosa uma pessoa acha a outra tem efeito negativo.
 
 ```{r}
 pR2(bm.1)
 ```
 
-Efeito positivo: interesses em comum, o quão atraente, o quão divertida.
-Efeito negativo: o quão ambiciosa
+Uma forma de analisar o quanto um modelo explica os dados, na regressão logística, é utilizando o pseudo R² de McFadden. Nesse caso essa métrica indica que aproximadamente 24.6% dos matchs conseguem ser explicados pelo modelo criado. 
 
-## 2. Que fatores nos dados têm mais efeito na chance de um participante querer se encontrar novamente com outro?
+> Efeito positivo: interesses em comum, o quão atraente, o quão divertida.
+Efeito negativo: o quão ambiciosa.
+
+### 2. Que fatores nos dados têm mais efeito na chance de um participante querer se encontrar novamente com outro?
+
+Excluindo as duas variáveis que não apresentam significância, o quão inteligente e o quão sincera a pessoa pareceu ser, se tem um modelo de 4 variáveis, interesses em comum, o quão atrante, o quão divertida e o quão ambiciosa uma pessoa acha a outra.
 
 ```{r}
 bm.2<- glm(dec ~ shar + attr + fun + amb, 
           data = dates, 
           family = "binomial")
 tidy(bm.2, conf.int = TRUE, exponentiate = TRUE)
+```
+
+A variável com mais influência sobre a probabilidade de match é o quão atraente a pessoa parece ser, seguida pelos proporção de interesses em comum e pelo quão divertida e o quão ambiciosa a outra pessoa parece ser. Apesar da variável que representa a ambição ter efeito negativo sua influência absoluta se equipara à do quão divertida a pessoa parece ser.  
+
+```{r}
 pR2(bm.2)
 ```
+
+De acordo com o pseudo R² de McFadden este modelo explica cerca de 24.5% dos dados.
 
 ```{r, warning=FALSE}
 model.2 = dates %>% 
@@ -73,5 +88,7 @@ mm %>%
   ggplot(aes(x = amb, colour=attr)) + 
   geom_line(aes(y = .fitted, group=attr)) +
   facet_grid(shar ~ fun) +
-  labs(title="Os atributos que mais influenciam no match", x="Interesses em comum", y="Predição do match", colour="Atração")
+  labs(title="Os atributos que mais influenciam no match", x="Ambição", y="Predição do match", colour="Atração")
 ```
+
+Como já previsto o quão ambiciosa a pessoa pareceu ser tem efeito negativo no resultado do match, por esse motivo a linhas do gráfico tem inclinação descendente (negativa). Também é possível notar o quanto a atração influencia positivamente no resultado, estando a linha mais clara sempre muito acima das outras linhas. Também se vê que, quando comparadas, a variável dos interesses em comum tem mais influência que a variável do quão divertida a pessoa pareceu ser. Observando o gráfico de baixo  da coluna mais a esquerda e o gráfico de cima da coluna mais à direita se vê que o primeiro, quando os interesses em comum têm valor alto e o quão divertida tem valor baixo, apresenta predições mais altas que o último, quando os interesses em comum têm valor baixo e o quão divertida tem valor alto. 
